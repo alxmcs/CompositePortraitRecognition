@@ -26,19 +26,40 @@ if __name__ == "__main__":
     encodings_array_before = []
     # after style_transfer
     encodings_array_after = []
+    # array of indexes of successful operations
+    successful_indexes = []
 
-    for i in range(0, len(images)):
-        path0 = images[i]
-        path1 = sketches[i]
-        distance = utils.face_encoding.calculate_distance(path0, path1)
-        encodings_array_before.append(distance)
-        path_image_with_style = os.path.join("images", "with_style", str(i + 1), ".png")
-        image_with_style = transfer_model.process_image(path0, path1, path_image_with_style)
-        new_distance = utils.face_encoding.calculate_distance(path_image_with_style, path1)
-        encodings_array_after.append(new_distance)
+
+    for i in range(1, 20):
         print(f"{datetime.now()}: iteration number {i}")
+        path0 = os.path.join("images", "photos", f"photo{str(i + 1)}.png")
+        path1 = os.path.join("images", "sketches", f"sketch{str(i + 1)}.png")
+        try:
+            distance = utils.face_encoding.calculate_distance(path0, path1)
+        except IndexError as e:
+            print(f"{str(e)} \n не удалось обнаружить лицо на фотографии до переноса стиля")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition
+            continue
+        path_image_with_style = os.path.join("images", "with_style", f"{str(i + 1)}.png")
+        image_with_style = transfer_model.process_image(path0, path1, path_image_with_style)
+        try:
+            new_distance = utils.face_encoding.calculate_distance(path_image_with_style, path1)
+        except IndexError as e:
+            print(f"{str(e)} \n не удалось обнаружить лицо на фотографии после переноса стиля")
+            continue
+        encodings_array_before.append(distance)
+        encodings_array_after.append(new_distance)
         print(f"{datetime.now()}: {distance}")
         print(f"{datetime.now()}: {new_distance}")
+        successful_indexes.append(i)
+
+    book = openpyxl.Workbook()
+    sheet_1 = book.create_sheet("results", 0)
+    sheet_1.append(headers)
+
+    # в таблицу попадают только успешные преобразования стиля(в которых рассчиталось расстояние до и после)
+    for i in range(0, len(successful_indexes)):
+        sheet_1.append([successful_indexes[i], encodings_array_before[i], encodings_array_after[i]])
+    book.save("results/results.xlsx")
 
     # this part calculates average gain
     avg_before = sum(encodings_array_before) / len(encodings_array_before)
@@ -46,10 +67,4 @@ if __name__ == "__main__":
     print(f"{datetime.now()}: avg_before: {avg_before}\navg_after: {avg_after}")
     print(f"{datetime.now()}: improve: {avg_before / avg_after}")
 
-    book = openpyxl.Workbook()
-    sheet_1 = book.create_sheet("results", 0)
-    sheet_1.append(headers)
 
-    for i in range(0, len(encodings_array_before)):
-        sheet_1.append([i + 1, encodings_array_before[i], encodings_array_after[i]])
-    book.save("results/results.xlsx")
