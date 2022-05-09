@@ -3,12 +3,16 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-from absl.flags import FLAGS
-from arcface import ArcFace
 from arcface.lib import ArcFaceModel, l2_norm
 
 
-def convert_image(img):
+def calculate_embeddings(img, model, input_size):
+    img = convert_image(img, input_size)
+    embeds = l2_norm(model(img))
+    return embeds
+
+
+def convert_image(img, input_size):
     img = cv2.resize(img, (input_size, input_size))
     img = img.astype(np.float32) / 255.
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -34,12 +38,12 @@ if __name__ == "__main__":
         if img0 is None:
             print("error reading image 0")
         else:
-            img0 = convert_image(img0)
+            img0 = convert_image(img0, input_size)
             embeds0 = l2_norm(model(img0))
         if img1 is None:
             print("error reading image 1")
         else:
-            img1 = convert_image(img1)
+            img1 = convert_image(img1, input_size)
             embeds1 = l2_norm(model(img1))
             out_path = os.path.join("C:\\CompositePortraitRecongnition", "output_embeds", str(i))
             np.save(out_path, embeds1)
@@ -55,9 +59,9 @@ if __name__ == "__main__":
 
 # Я пока не понял, в чем тут дело...ему интерпретатор какой-то не нравится?
 # Traceback (most recent call last):
-#   File "C:\CompositePortraitRecongnition\arcface\main.py", line 28, in <module>
+#   File "C:\CompositePortraitRecongnition\my_arcface\main.py", line 28, in <module>
 #     face_rec = ArcFace.ArcFace()
-#   File "C:\Anaconda\envs\new_environment\lib\site-packages\arcface\ArcFace.py", line 39, in __init__
+#   File "C:\Anaconda\envs\new_environment\lib\site-packages\my_arcface\ArcFace.py", line 39, in __init__
 #     self.interpreter = tf.lite.Interpreter(model_path=tflite_path)
 #   File "C:\Anaconda\envs\new_environment\lib\site-packages\tensorflow\lite\python\interpreter.py", line 365, in __init__
 #     _interpreter_wrapper.CreateWrapperFromFile(
