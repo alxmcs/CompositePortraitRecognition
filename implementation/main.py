@@ -10,18 +10,19 @@ import numpy as np
 def get_best_distanse(embeds):
     # больше точно не будет
     best_distance = 100
-    best_embeds = -1
+    path_best_embeds = -1
     "C:\CompositePortraitRecongnition\output_embeds\1.npy"
     for i in range(1, 19):
         name = str(i) + ".npy"
         path = os.path.join("C:\CompositePortraitRecongnition", "output_embeds", name)
         embeds1 = np.load(path)
-        distance = ArcFace.ArcFace.get_distance_embeddings(embeds, embeds1)
+        diff = np.subtract(embeds1, embeds)
+        distance = np.sum(np.square(diff))
         if distance < best_distance:
             best_distance = distance
-            best_embeds = path
+            path_best_embeds = path
 
-    return best_distance, best_embeds
+    return best_distance, path_best_embeds
 
 
 if __name__ == "__main__":
@@ -39,6 +40,8 @@ if __name__ == "__main__":
                          backbone_type='ResNet50',
                          training=False)
 
+
+
     # video_capture = cv2.VideoCapture(0)
     video_capture = cv2.VideoCapture('C:\\CompositePortraitRecongnition\\video\\test.mp4')
     count = 0
@@ -55,7 +58,8 @@ if __name__ == "__main__":
             cv2.imwrite("C:\\CompositePortraitRecongnition\\dataset\\frame%d.jpg" % count, gray[y:y + h, x:x + w])
             count += 1
             embeds = my_arcface.main.calculate_embeddings(frame, model, input_size)
-            best_distance, best_embeds = get_best_distanse(embeds)
+            best_distance, path_best_embeds = get_best_distanse(embeds)
+            print(best_distance, path_best_embeds)
         # Display the resulting frame
         cv2.imshow('Video', frame)
 
