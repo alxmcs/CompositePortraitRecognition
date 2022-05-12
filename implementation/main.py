@@ -2,8 +2,7 @@ import os.path
 
 import cv2
 from arcface.lib import ArcFaceModel
-from arcface import ArcFace
-import my_arcface.main
+import utils.my_arcface.main
 import numpy as np
 
 
@@ -57,7 +56,7 @@ if __name__ == "__main__":
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.imwrite("C:\\CompositePortraitRecongnition\\dataset\\frame%d.jpg" % count, gray[y:y + h, x:x + w])
             count += 1
-            embeds = my_arcface.main.calculate_embeddings(frame, model, input_size)
+            embeds = utils.my_arcface.main.calculate_embeddings(frame, model, input_size)
             best_distance, path_best_embeds = get_best_distanse(embeds)
             print(best_distance, path_best_embeds)
         # Display the resulting frame
