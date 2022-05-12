@@ -1,6 +1,7 @@
 import argparse
 import face_recognition
 
+
 def get_encoding(path):
     """
     reads image from a given location and calculates its face encoding
