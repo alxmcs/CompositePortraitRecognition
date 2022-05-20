@@ -16,7 +16,7 @@ if __name__ == "__main__":
     headers = ['№ пары изображений',
                'Расстояние до переноса стиля tensorflow',
                'Расстояние после переноса стиля tensorflow',
-               'Расстояние до переноса стиля arcface,'
+               'Расстояние до переноса стиля arcface',
                'Расстояние после переноса стиля arcface']
 
     # before style_transfer
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # array of indexes of successful operations
     successful_indexes = []
 
-    input_size = 112
+    input_size = 300
     # arcface model
     model = ArcFaceModel(size=input_size,
                          backbone_type='ResNet50',

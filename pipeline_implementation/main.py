@@ -39,8 +39,6 @@ if __name__ == "__main__":
                          backbone_type='ResNet50',
                          training=False)
 
-
-
     # video_capture = cv2.VideoCapture(0)
     video_capture = cv2.VideoCapture('C:\\CompositePortraitRecongnition\\video\\test.mp4')
     count = 0
@@ -54,7 +52,7 @@ if __name__ == "__main__":
         # Draw a rectangle around the faces
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.imwrite("C:\\CompositePortraitRecongnition\\dataset\\frame%d.jpg" % count, gray[y:y + h, x:x + w])
+            cv2.imwrite(f"C:\\CompositePortraitRecongnition\\dataset\\frame{count}.jpg", gray[y:y + h, x:x + w])
             count += 1
             embeds = utils.my_arcface.main.calculate_embeddings(frame, model, input_size)
             best_distance, path_best_embeds = get_best_distanse(embeds)
