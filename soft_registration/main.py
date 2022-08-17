@@ -13,14 +13,6 @@ import utils.tensorflow.face_encoding
 
 if __name__ == "__main__":
 
-    # settings = {'portrait_path': 'C:\\CompositePortraitRecongnition\\images\\photos\\photo1.png',
-    #             'sketch_path': 'C:\\CompositePortraitRecongnition\\images\\sketches\\sketch1.png',
-    #             'threshold': 0.5
-    #             }
-    #
-    # with open('settings.json', 'w') as fp:
-    #     json.dump(settings, fp)
-
     with open('settings.json') as info_data:
         json_data = json.load(info_data)
 
@@ -28,13 +20,10 @@ if __name__ == "__main__":
     sketch_path = json_data['sketch_path']
     threshold = json_data['threshold']
 
-    distance = utils.tensorflow.face_encoding.calculate_distance(portrait_path, sketch_path)
-    result = False
-    if distance < threshold:
-        result = True
-    settings = {'tensorflow_distance': distance, 'is_like': result}
-    print(settings['tensorflow_distance'])
-    print(settings['is_like'])
+    tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(portrait_path, sketch_path)
+    tensorflow_result = False
+    if tensorflow_distance < threshold:
+        tensorflow_result = True
 
     input_size = 300
     portrait_image = Image.open(portrait_path)
@@ -53,10 +42,12 @@ if __name__ == "__main__":
     model = ArcFaceModel(size=input_size,
                          backbone_type='ResNet50',
                          training=False)
-    distance = utils.my_arcface.main.calculate_distance('portrait_resized.png', 'sketch_resized.png', input_size, model)
-    result = False
-    if distance < threshold:
-        result = True
-    settings = {'arcface_distance': distance, 'is_like': result}
-    print(settings['arcface_distance'])
-    print(settings['is_like'])
+    arcface_distance = utils.my_arcface.main.calculate_distance('portrait_resized.png', 'sketch_resized.png',
+                                                                input_size, model)
+    arcface_result = False
+    if arcface_distance < threshold:
+        arcface_result = True
+    results = {'tensorflow_distance': str(tensorflow_distance), 'tensorflow_is_like': tensorflow_result,
+               'arcface_distance': str(arcface_distance), 'arcface_is_like': arcface_result}
+    with open('results.json', 'w') as fp:
+        json.dump(results, fp)
