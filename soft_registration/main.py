@@ -1,14 +1,8 @@
 import json
-import cv2
-import numpy as np
 import utils.tensorflow.face_encoding
-from skimage.io import imread, imsave, imshow
 from PIL import Image
-import openpyxl
 from arcface.lib import ArcFaceModel
 
-import utils.my_arcface.main
-import utils.tensorflow.style_transfer
 import utils.tensorflow.face_encoding
 
 if __name__ == "__main__":

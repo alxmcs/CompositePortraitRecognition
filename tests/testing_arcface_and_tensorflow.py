@@ -4,14 +4,13 @@ from datetime import datetime
 import openpyxl
 from arcface.lib import ArcFaceModel
 
-import utils.my_arcface.main
-import utils.tensorflow.style_transfer
 import utils.tensorflow.face_encoding
 
 if __name__ == "__main__":
 
     # tensorflow model
-    transfer_model = utils.tensorflow.style_transfer.TransferModel(utils.tensorflow.style_transfer.MODEL_URL)
+    transfer_model = utils.tensorflow.style_transfer.TransferModel(
+        utils.tensorflow.style_transfer.MODEL_URL)
 
     headers = ['№ пары изображений',
                'Расстояние до переноса стиля tensorflow',

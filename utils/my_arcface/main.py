@@ -1,6 +1,15 @@
 import cv2
 import numpy as np
-from arcface.lib import l2_norm
+from arcface.lib import l2_norm, ArcFaceModel
+
+
+def calculate_embedding(path, input_size=300):
+    img = cv2.imread(path)
+    model = ArcFaceModel(size=input_size,
+                         backbone_type='ResNet50',
+                         training=False)
+    img = convert_image(img, input_size)
+    return l2_norm(model(img))
 
 
 def calculate_embeddings(img, model, image_size):
