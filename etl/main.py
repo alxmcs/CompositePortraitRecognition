@@ -1,3 +1,4 @@
+import datetime
 import json
 import sqlite3
 from PIL import Image
@@ -32,3 +33,13 @@ if __name__ == "__main__":
     tensorflow_embedding = utils.tensorflow.face_encoding.get_encoding(photo_path)
 
     arcface_embedding = utils.my_arcface.calculate_embedding(photo_path)
+
+    name = json_data['name']
+    patronymic = json_data['patronymic']
+    surname = json_data['surname']
+    comment = json_data['comment']
+
+    date_added = datetime.datetime.now()
+    data = [(name, patronymic, surname, comment, date_added)]
+    cursor.executemany("insert into person(name, patronymic, surname, comment, date_added) VALUES(?, ?, ?, ?, ?)",
+                       data)
