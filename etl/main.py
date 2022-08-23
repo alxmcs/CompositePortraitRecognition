@@ -1,9 +1,8 @@
 import datetime
 import json
 import sqlite3
+
 from PIL import Image
-import cv2
-from arcface.lib import ArcFaceModel
 
 import utils.tensorflow.face_encoding
 
