@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS "embedding" (
 	FOREIGN KEY("person_id") REFERENCES "person"("id"),
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
-INSERT INTO "preprocessing" VALUES (1,'preprocessing',NULL,'2022-08-23');
+INSERT INTO "preprocessing" VALUES (1,'thumbnail',NULL,'2022-08-23');
 INSERT INTO "model" VALUES (1,'tensorflow',NULL,'2022-08-23');
 INSERT INTO "model" VALUES (2,'arcface',NULL,'2022-08-23');
 COMMIT;
