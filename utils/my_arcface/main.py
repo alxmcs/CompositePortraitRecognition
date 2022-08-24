@@ -33,11 +33,9 @@ def convert_image(img, input_size):
     return img
 
 
-def calculate_distance(path1, path2, image_size, model):
-    img1 = cv2.imread(path1)
-    img2 = cv2.imread(path2)
+def calculate_distance(path1, path2, image_size):
 
-    embeddings1 = calculate_embeddings(img1, model, image_size)
-    embeddings2 = calculate_embeddings(img2, model, image_size)
+    embeddings1 = calculate_embedding(path1, image_size)
+    embeddings2 = calculate_embedding(path2, image_size)
 
     return get_distance(embeddings1, embeddings2)

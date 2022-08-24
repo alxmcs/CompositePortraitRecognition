@@ -2,9 +2,11 @@ import os
 from datetime import datetime
 
 import openpyxl
-from arcface.lib import ArcFaceModel
+from PIL import Image
 
+import utils.my_arcface.main
 import utils.tensorflow.face_encoding
+import utils.tensorflow.style_transfer
 
 if __name__ == "__main__":
 
@@ -28,10 +30,6 @@ if __name__ == "__main__":
     successful_indexes = []
 
     input_size = 300
-    # arcface model
-    model = ArcFaceModel(size=input_size,
-                         backbone_type='ResNet50',
-                         training=False)
 
     for i in range(1, 20):
         print(f"{datetime.now()}: iteration number {i}")
@@ -39,7 +37,15 @@ if __name__ == "__main__":
         path1 = os.path.join("../images", "sketches", f"sketch{str(i + 1)}.png")
         try:
             tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path0, path1)
-            arcface_distance = utils.my_arcface.main.calculate_distance(path0, path1, input_size, model)
+
+            portrait_image = Image.open(path0)
+            portrait_image.thumbnail((input_size, input_size))
+            portrait_image.save("portrait_resized.png")
+            sketch_image = Image.open(path1)
+            sketch_image.thumbnail((input_size, input_size))
+            sketch_image.save('sketch_resized.png')
+            arcface_distance = utils.my_arcface.main.calculate_distance("portrait_resized.png", 'sketch_resized.png',
+                                                                        input_size)
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии до переноса стиля")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition
@@ -48,8 +54,16 @@ if __name__ == "__main__":
         image_with_style = transfer_model.process_image(path0, path1, path_image_with_style)
         try:
             new_tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path_image_with_style, path1)
-            new_arcface_distance = utils.my_arcface.main.calculate_distance(path_image_with_style, path1, input_size,
-                                                                            model)
+
+            portrait_image = Image.open(path_image_with_style)
+            portrait_image.thumbnail((input_size, input_size))
+            portrait_image.save("portrait_resized.png")
+            sketch_image = Image.open(path1)
+            sketch_image.thumbnail((input_size, input_size))
+            sketch_image.save('sketch_resized.png')
+            new_arcface_distance = utils.my_arcface.main.calculate_distance("portrait_resized.png",
+                                                                            'sketch_resized.png',
+                                                                            input_size)
         except IndexError as e:
             print(f"{str(e)} \n не удалось обнаружить лицо на фотографии после переноса стиля")
             continue
