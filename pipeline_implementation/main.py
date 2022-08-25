@@ -54,7 +54,7 @@ if __name__ == "__main__":
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.imwrite(f"C:\\CompositePortraitRecongnition\\dataset\\frame{count}.jpg", gray[y:y + h, x:x + w])
             count += 1
-            embeds = utils.my_arcface.main.calculate_embeddings(frame, model, input_size)
+            embeds = utils.my_arcface.main.calculate_embeddings(frame, input_size, model)
             best_distance, path_best_embeds = get_best_distanse(embeds)
             print(best_distance, path_best_embeds)
         # Display the resulting frame

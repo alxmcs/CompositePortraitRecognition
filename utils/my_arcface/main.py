@@ -12,7 +12,7 @@ def calculate_embedding(path, input_size=300):
     return l2_norm(model(img))
 
 
-def calculate_embeddings(img, model, image_size):
+def calculate_embeddings(img, image_size, model):
     img = convert_image(img, image_size)
     embeds = l2_norm(model(img))
     return embeds
@@ -33,9 +33,11 @@ def convert_image(img, input_size):
     return img
 
 
-def calculate_distance(path1, path2, image_size):
+def calculate_distance(path1, path2, image_size, model):
+    img1 = cv2.imread(path1)
+    img2 = cv2.imread(path2)
 
-    embeddings1 = calculate_embedding(path1, image_size)
-    embeddings2 = calculate_embedding(path2, image_size)
+    embeddings1 = calculate_embeddings(img1, image_size, model)
+    embeddings2 = calculate_embeddings(img2, image_size, model)
 
     return get_distance(embeddings1, embeddings2)

@@ -3,6 +3,7 @@ from datetime import datetime
 
 import openpyxl
 from PIL import Image
+from arcface.lib import ArcFaceModel
 
 import utils.my_arcface.main
 import utils.tensorflow.face_encoding
@@ -30,13 +31,16 @@ if __name__ == "__main__":
     successful_indexes = []
 
     input_size = 300
+    model = ArcFaceModel(size=input_size,
+                         backbone_type='ResNet50',
+                         training=False)
 
     for i in range(1, 20):
         print(f"{datetime.now()}: iteration number {i}")
         path0 = os.path.join("../images", "photos", f"photo{str(i + 1)}.png")
         path1 = os.path.join("../images", "sketches", f"sketch{str(i + 1)}.png")
         try:
-            tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path0, path1)
+            # tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path0, path1)
 
             portrait_image = Image.open(path0)
             portrait_image.thumbnail((input_size, input_size))
@@ -44,8 +48,10 @@ if __name__ == "__main__":
             sketch_image = Image.open(path1)
             sketch_image.thumbnail((input_size, input_size))
             sketch_image.save('sketch_resized.png')
+            tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance("portrait_resized.png",
+                                                                                    'sketch_resized.png')
             arcface_distance = utils.my_arcface.main.calculate_distance("portrait_resized.png", 'sketch_resized.png',
-                                                                        input_size)
+                                                                        input_size, model)
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии до переноса стиля")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition
@@ -53,7 +59,7 @@ if __name__ == "__main__":
         path_image_with_style = os.path.join("../images", "with_style", f"{str(i + 1)}.png")
         image_with_style = transfer_model.process_image(path0, path1, path_image_with_style)
         try:
-            new_tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path_image_with_style, path1)
+            # new_tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance(path_image_with_style, path1)
 
             portrait_image = Image.open(path_image_with_style)
             portrait_image.thumbnail((input_size, input_size))
@@ -61,9 +67,11 @@ if __name__ == "__main__":
             sketch_image = Image.open(path1)
             sketch_image.thumbnail((input_size, input_size))
             sketch_image.save('sketch_resized.png')
+            new_tensorflow_distance = utils.tensorflow.face_encoding.calculate_distance("portrait_resized.png",
+                                                                                        'sketch_resized.png')
             new_arcface_distance = utils.my_arcface.main.calculate_distance("portrait_resized.png",
                                                                             'sketch_resized.png',
-                                                                            input_size)
+                                                                            input_size, model)
         except IndexError as e:
             print(f"{str(e)} \n не удалось обнаружить лицо на фотографии после переноса стиля")
             continue
