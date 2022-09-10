@@ -5,7 +5,7 @@ import sqlite3
 from PIL import Image
 
 import utils.tensorflow.face_encoding
-
+import utils.my_arcface.main
 if __name__ == "__main__":
     with open('settings.json') as info_data:
         json_data = json.load(info_data)
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     inp = input("enter 1 if you want thumbnail or 0 if you don't want")
     preprocessing_id = 0
-    if inp == 1:
+    if int(inp) == 1:
         size = int(input("enter the size you want to convert the image to: "))
         portrait_image = Image.open(photo_path)
         portrait_image.thumbnail((size, size))
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     tensorflow_embedding = utils.tensorflow.face_encoding.get_encoding(photo_path)
 
-    arcface_embedding = utils.my_arcface.calculate_embedding(photo_path)
+    arcface_embedding = utils.my_arcface.main.calculate_embedding(photo_path)
 
     name = json_data['name']
     patronymic = json_data['patronymic']
