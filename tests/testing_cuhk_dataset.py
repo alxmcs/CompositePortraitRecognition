@@ -9,10 +9,14 @@ from arcface.lib import ArcFaceModel
 import utils.my_arcface.main
 import utils.tensorflow.face_encoding
 import utils.tensorflow.style_transfer
+
 from tests.distance_visualization import display_results
 
 if __name__ == "__main__":
-
+    content1 = os.listdir('C:\\CompositePortraitRecongnition\\dataset\\CUHK\\testing_photos')
+    # print(content1)
+    # content2 = os.listdir('C:\\CompositePortraitRecongnition\\dataset\\CUHK\\testing_sketches')
+    # print(content2)
     transfer_model = utils.tensorflow.style_transfer.TransferModel(
         utils.tensorflow.style_transfer.MODEL_URL)
 
@@ -28,11 +32,13 @@ if __name__ == "__main__":
     model = ArcFaceModel(size=input_size,
                          backbone_type='ResNet50',
                          training=False)
-
-    for i in range(1, 113):
+    i = 0
+    for file in content1:
         print(f"{datetime.now()}: iteration number {i}")
-        path1 = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_{str(i)}.jpg")
-        path0 = os.path.join("../dataset", "TDCS", str(i), "TD_RGB_E_1.jpg")
+        i += 1
+        path1 = os.path.join("../dataset", "CUHK", "testing_photos", file)
+        new_file = file.replace('.jpg', '-sz1.jpg')
+        path0 = os.path.join("../dataset", "CUHK", "testing_sketches", new_file)
         random_sketch_index = mkl_random.randint(1, 113)
         path2 = os.path.join("../dataset", "TDCS", str(random_sketch_index), f"TD_CS_{str(random_sketch_index)}.jpg")
         try:
@@ -48,9 +54,9 @@ if __name__ == "__main__":
             random_sketch_image.thumbnail((input_size, input_size))
             random_sketch_image.save('random_sketch_resized.png')
 
-            path_image_with_style = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_with_style_{str(i)}.jpg")
-            path_image_with_random_style = os.path.join("../dataset", "TDCS", str(i),
-                                                        f"TD_CS_with_random_style_{str(i)}.jpg")
+            path_image_with_style = os.path.join("../dataset", "CUHK", "with_style", f"CUHK_with_style_{str(i)}.jpg")
+            path_image_with_random_style = os.path.join("../dataset", "CUHK", "with_style",
+                                                        f"CUHK_with_random_style_{str(i)}.jpg")
             image_with_style = transfer_model.process_image("portrait_resized.png", "sketch_resized.png",
                                                             path_image_with_style)
             image_with_random_style = transfer_model.process_image("portrait_resized.png", "random_sketch_resized.png",
@@ -80,7 +86,6 @@ if __name__ == "__main__":
             wrong_arcface_distance_after = utils.my_arcface.main.calculate_distance(path_image_with_random_style,
                                                                                     'random_sketch_resized.png',
                                                                                     input_size, model)
-
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition
@@ -128,4 +133,4 @@ if __name__ == "__main__":
     sheet_1.append(
         [avg_tensorflow_before, avg_wrong_tensorflow_before, avg_tensorflow_after, avg_wrong_tensorflow_after,
          avg_arcface_before, avg_wrong_arcface_before, avg_arcface_after, avg_wrong_arcface_after])
-    book.save("C:\\CompositePortraitRecongnition\\tests\\testing_TDCS_results.xlsx")
+    book.save("C:\\CompositePortraitRecongnition\\tests\\testing_CUHK_results.xlsx")
