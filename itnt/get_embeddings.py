@@ -21,9 +21,12 @@ if __name__ == "__main__":
     test_index = int(size * 0.7)
     for i in range(1, size):
         print(f"{datetime.now()}: iteration number {i}")
-        path1 = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_{str(i)}.jpg")
+        # sketch
+        path1 = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_{str(i)}.jpg")\
+        # photo
         path0 = os.path.join("../dataset", "TDCS", str(i), "TD_RGB_E_1.jpg")
         random_sketch_index = mkl_random.randint(1, 113)
+        # random sketch
         path2 = os.path.join("../dataset", "TDCS", str(random_sketch_index), f"TD_CS_{str(random_sketch_index)}.jpg")
         try:
             portrait_image = Image.open(path0)
@@ -43,11 +46,17 @@ if __name__ == "__main__":
             sketch_image_embed_tf = get_encoding('sketch_resized.png')
             random_sketch_image_embed_tf = get_encoding('random_sketch_resized.png')
 
+            right_embed_tf = np.concatenate((portrait_image_embed_tf, sketch_image_embed_tf))
+            wrong_embed_tf = np.concatenate((portrait_image_embed_tf, random_sketch_image_embed_tf))
+
             # arcface embeddings
             portrait_image_embed_arc = calculate_embedding_with_model("portrait_resized.png", input_size, model)
             sketch_image_embed_arc = calculate_embedding_with_model('sketch_resized.png', input_size, model)
             random_sketch_image_embed_arc = calculate_embedding_with_model('random_sketch_resized.png', input_size,
                                                                            model)
+
+            right_embed_arc = np.concatenate((portrait_image_embed_arc, sketch_image_embed_arc))
+            wrong_embed_arc = np.concatenate((portrait_image_embed_arc, random_sketch_image_embed_arc))
 
             if count < test_index:
                 # ts
@@ -57,32 +66,23 @@ if __name__ == "__main__":
                 count_to_save = count - test_index
                 folder_name = "test"
 
-            path_to_save_right_portrait = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
-                                                       f"tf_portrait_embed_{count_to_save}")
-            path_to_save_right_sketch = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
-                                                     f"tf_sketch_embed_{count_to_save}")
-            path_to_save_wrong_portrait = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
-                                                       f"tf_portrait_embed_{count_to_save}")
-            path_to_save_wrong_sketch = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
-                                                     f"tf_sketch_embed_{count_to_save}")
-            np.save(path_to_save_right_portrait, portrait_image_embed_tf)
-            np.save(path_to_save_right_sketch, sketch_image_embed_tf)
-            np.save(path_to_save_wrong_portrait, portrait_image_embed_tf)
-            np.save(path_to_save_wrong_sketch, random_sketch_image_embed_tf)
+            path_to_save_right = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
+                                                       f"tf_embed_{count_to_save}")
+
+            path_to_save_wrong = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
+                                                       f"tf_embed_{count_to_save}")
+            np.save(path_to_save_right, right_embed_tf)
+            np.save(path_to_save_wrong, wrong_embed_tf)
 
             # arc
-            path_to_save_right_portrait = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
-                                                       f"arc_portrait_embed_{count_to_save}")
-            path_to_save_right_sketch = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
-                                                     f"arc_sketch_embed_{count_to_save}")
-            path_to_save_wrong_portrait = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
-                                                       f"arc_portrait_embed_{count_to_save}")
-            path_to_save_wrong_sketch = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
-                                                     f"arc_sketch_embed_{count_to_save}")
-            np.save(path_to_save_right_portrait, portrait_image_embed_arc)
-            np.save(path_to_save_right_sketch, sketch_image_embed_arc)
-            np.save(path_to_save_wrong_portrait, portrait_image_embed_arc)
-            np.save(path_to_save_wrong_sketch, random_sketch_image_embed_arc)
+            path_to_save_right = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
+                                                       f"arc_embed_{count_to_save}")
+
+            path_to_save_wrong = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
+                                                       f"arc_embed_{count_to_save}")
+
+            np.save(path_to_save_right, right_embed_arc)
+            np.save(path_to_save_wrong, wrong_embed_arc)
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition
