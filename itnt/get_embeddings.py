@@ -1,14 +1,14 @@
 import os
-from datetime import datetime
-
+import datetime
+import sqlite3
 import mkl_random
 import numpy as np
 from PIL import Image
 from arcface.lib import ArcFaceModel
-
+import datetime
 from utils.my_arcface.main import calculate_embedding_with_model
 from utils.tensorflow.face_encoding import get_encoding
-
+from db.db_operations import insert_person, insert_embedding
 if __name__ == "__main__":
 
     input_size = 300
@@ -17,13 +17,22 @@ if __name__ == "__main__":
                          training=False)
     size = 113
 
+    conn = sqlite3.connect("C:\\CompositePortraitRecongnition\\db\\database.db")
+    cursor = conn.cursor()
+
+    # todo по-хорошему считать из БД их id, но это потом
+    tensorflow_id = 1
+    arcface_id = 2
+
+    thumbnail_id = 1
+
     count = 0
     test_index = int(size * 0.7)
     for i in range(1, size):
-        print(f"{datetime.now()}: iteration number {i}")
+        print(f"{datetime.datetime.now()}: iteration number {i}")
         # sketch
-        path1 = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_{str(i)}.jpg")\
-        # photo
+        path1 = os.path.join("../dataset", "TDCS", str(i), f"TD_CS_{str(i)}.jpg") \
+            # photo
         path0 = os.path.join("../dataset", "TDCS", str(i), "TD_RGB_E_1.jpg")
         random_sketch_index = mkl_random.randint(1, 113)
         # random sketch
@@ -55,6 +64,28 @@ if __name__ == "__main__":
             random_sketch_image_embed_arc = calculate_embedding_with_model('random_sketch_resized.png', input_size,
                                                                            model)
 
+            name = f'name_{i}'
+            patronymic = f'patronymic_{i}'
+            surname = f'surname_{i}'
+            comment = f'comment_{i}'
+            date_added = datetime.datetime.now()
+
+            last_id_int = insert_person(cursor, name, patronymic, surname, comment, date_added)
+
+            insert_embedding(cursor, portrait_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+                             'photo_true')
+            insert_embedding(cursor, sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+                             'sketch_true')
+            insert_embedding(cursor, random_sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+                             'sketch_false')
+
+            insert_embedding(cursor, portrait_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+                             'photo_true')
+            insert_embedding(cursor, sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+                             'sketch_true')
+            insert_embedding(cursor, random_sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+                             'sketch_false')
+
             right_embed_arc = np.concatenate((portrait_image_embed_arc, sketch_image_embed_arc))
             wrong_embed_arc = np.concatenate((portrait_image_embed_arc, random_sketch_image_embed_arc))
 
@@ -67,19 +98,19 @@ if __name__ == "__main__":
                 folder_name = "test"
 
             path_to_save_right = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
-                                                       f"tf_embed_{count_to_save}")
+                                              f"tf_embed_{count_to_save}")
 
             path_to_save_wrong = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
-                                                       f"tf_embed_{count_to_save}")
+                                              f"tf_embed_{count_to_save}")
             np.save(path_to_save_right, right_embed_tf)
             np.save(path_to_save_wrong, wrong_embed_tf)
 
             # arc
             path_to_save_right = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
-                                                       f"arc_embed_{count_to_save}")
+                                              f"arc_embed_{count_to_save}")
 
             path_to_save_wrong = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
-                                                       f"arc_embed_{count_to_save}")
+                                              f"arc_embed_{count_to_save}")
 
             np.save(path_to_save_right, right_embed_arc)
             np.save(path_to_save_wrong, wrong_embed_arc)
@@ -89,3 +120,6 @@ if __name__ == "__main__":
             continue
 
         count += 1
+
+    conn.commit()
+    conn.close()

@@ -50,11 +50,11 @@ if __name__ == "__main__":
     embedding_data_tensorflow = [(str(tensorflow_embedding)), str(datetime.datetime.now()), 1, preprocessing_id,
                                  last_id_int]
     cursor.execute(
-        "insert into embedding(value, date_added, model_id, preprocessing_id, person_id) VALUES(?, ?, ?, ?, ?",
+        "insert into embedding(value, date_added, model_id, preprocessing_id, person_id) VALUES(?, ?, ?, ?, ?)",
         embedding_data_tensorflow)
     embedding_data_arcface = [(str(arcface_embedding)), str(datetime.datetime.now()), 2, preprocessing_id, last_id_int]
     cursor.execute(
-        "insert into embedding(value, date_added, model_id, preprocessing_id, person_id) VALUES(?, ?, ?, ?, ?",
+        "insert into embedding(value, date_added, model_id, preprocessing_id, person_id) VALUES(?, ?, ?, ?, ?)",
         embedding_data_tensorflow)
     conn.commit()
     conn.close()
