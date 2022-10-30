@@ -1,33 +1,42 @@
-import os
 import datetime
+import os
 import sqlite3
+
 import mkl_random
 import numpy as np
 from PIL import Image
 from arcface.lib import ArcFaceModel
-import datetime
+
+from db.db_operations import insert_person, insert_embedding
 from utils.my_arcface.main import calculate_embedding_with_model
 from utils.tensorflow.face_encoding import get_encoding
-from db.db_operations import insert_person, insert_embedding
+
 if __name__ == "__main__":
 
     input_size = 300
     model = ArcFaceModel(size=input_size,
                          backbone_type='ResNet50',
                          training=False)
+
+    # path_dataset = os.path.join('..//dataset', 'TDCS')
+    # folder_counter = sum([len(folder) for r, d, folder in os.walk(path_dataset)])
+    # size = folder_counter
+
     size = 113
 
     conn = sqlite3.connect("C:\\CompositePortraitRecongnition\\db\\database.db")
     cursor = conn.cursor()
 
-    # todo по-хорошему считать из БД их id, но это потом
-    tensorflow_id = 1
-    arcface_id = 2
+    tensorflow_id = cursor.execute("select id from model where name = ?", ['tensorflow']).fetchone()
+    arcface_id = cursor.execute("select id from model where name = ?", ['arcface']).fetchone()
 
-    thumbnail_id = 1
+    thumbnail_id = cursor.execute("select id from preprocessing where name = ?", ['thumbnail']).fetchone()
 
     count = 0
     test_index = int(size * 0.7)
+
+    comment = 'for testing tf and arcface'
+
     for i in range(1, size):
         print(f"{datetime.datetime.now()}: iteration number {i}")
         # sketch
@@ -67,28 +76,30 @@ if __name__ == "__main__":
             name = f'name_{i}'
             patronymic = f'patronymic_{i}'
             surname = f'surname_{i}'
-            comment = f'comment_{i}'
+
             date_added = datetime.datetime.now()
 
             last_id_int = insert_person(cursor, name, patronymic, surname, comment, date_added)
 
+            # todo ошибка падает тут
             insert_embedding(cursor, portrait_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'photo_true')
+                             'photo_true_tf')
             insert_embedding(cursor, sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'sketch_true')
+                             'sketch_true_tf')
             insert_embedding(cursor, random_sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'sketch_false')
+                             'sketch_false_tf')
 
             insert_embedding(cursor, portrait_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'photo_true')
+                             'photo_true_arc')
             insert_embedding(cursor, sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'sketch_true')
+                             'sketch_true_arc')
             insert_embedding(cursor, random_sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'sketch_false')
+                             'sketch_false_arc')
 
             right_embed_arc = np.concatenate((portrait_image_embed_arc, sketch_image_embed_arc))
             wrong_embed_arc = np.concatenate((portrait_image_embed_arc, random_sketch_image_embed_arc))
 
+            # запись эмбеддингов(конкатенации) в файл
             if count < test_index:
                 # ts
                 count_to_save = count
