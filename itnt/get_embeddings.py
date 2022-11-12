@@ -27,10 +27,10 @@ if __name__ == "__main__":
     conn = sqlite3.connect("C:\\CompositePortraitRecongnition\\db\\database.db")
     cursor = conn.cursor()
 
-    tensorflow_id = cursor.execute("select id from model where name = ?", ['tensorflow']).fetchone()
-    arcface_id = cursor.execute("select id from model where name = ?", ['arcface']).fetchone()
+    tensorflow_id = (cursor.execute("select id from model where name = ?", ['tensorflow']).fetchone())[0]
+    arcface_id = (cursor.execute("select id from model where name = ?", ['arcface']).fetchone())[0]
 
-    thumbnail_id = cursor.execute("select id from preprocessing where name = ?", ['thumbnail']).fetchone()
+    thumbnail_id = (cursor.execute("select id from preprocessing where name = ?", ['thumbnail']).fetchone())[0]
 
     count = 0
     test_index = int(size * 0.7)
@@ -81,7 +81,6 @@ if __name__ == "__main__":
 
             last_id_int = insert_person(cursor, name, patronymic, surname, comment, date_added)
 
-            # todo ошибка падает тут
             insert_embedding(cursor, portrait_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
                              'photo_true_tf')
             insert_embedding(cursor, sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
