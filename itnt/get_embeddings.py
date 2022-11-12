@@ -1,7 +1,7 @@
 import datetime
 import os
 import sqlite3
-
+from scipy.spatial import distance
 import mkl_random
 import numpy as np
 from PIL import Image
@@ -10,6 +10,14 @@ from arcface.lib import ArcFaceModel
 from db.db_operations import insert_person, insert_embedding
 from utils.my_arcface.main import calculate_embedding_with_model
 from utils.tensorflow.face_encoding import get_encoding
+
+
+def get_distances(u, v):
+    e_d = distance.euclidean(u, v)
+    ch_d = distance.chebyshev(u, v)
+    cos = distance.cosine(u, v)
+    return np.array([e_d, ch_d, cos])
+
 
 if __name__ == "__main__":
 
@@ -64,6 +72,9 @@ if __name__ == "__main__":
             sketch_image_embed_tf = get_encoding('sketch_resized.png')
             random_sketch_image_embed_tf = get_encoding('random_sketch_resized.png')
 
+            right_distances_tf = get_distances(portrait_image_embed_tf, sketch_image_embed_tf)
+            wrong_distances_tf = get_distances(portrait_image_embed_tf, random_sketch_image_embed_tf)
+
             right_embed_tf = np.concatenate((portrait_image_embed_tf, sketch_image_embed_tf))
             wrong_embed_tf = np.concatenate((portrait_image_embed_tf, random_sketch_image_embed_tf))
 
@@ -72,33 +83,35 @@ if __name__ == "__main__":
             sketch_image_embed_arc = calculate_embedding_with_model('sketch_resized.png', input_size, model)
             random_sketch_image_embed_arc = calculate_embedding_with_model('random_sketch_resized.png', input_size,
                                                                            model)
+            right_distances_arc = get_distances(portrait_image_embed_arc, sketch_image_embed_arc)
+            wrong_distances_arc = get_distances(portrait_image_embed_arc, random_sketch_image_embed_arc)
 
-            name = f'name_{i}'
-            patronymic = f'patronymic_{i}'
-            surname = f'surname_{i}'
-
-            date_added = datetime.datetime.now()
-
-            last_id_int = insert_person(cursor, name, patronymic, surname, comment, date_added)
-
-            insert_embedding(cursor, portrait_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'photo_true_tf')
-            insert_embedding(cursor, sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'sketch_true_tf')
-            insert_embedding(cursor, random_sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
-                             'sketch_false_tf')
-
-            insert_embedding(cursor, portrait_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'photo_true_arc')
-            insert_embedding(cursor, sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'sketch_true_arc')
-            insert_embedding(cursor, random_sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
-                             'sketch_false_arc')
+            # name = f'name_{i}'
+            # patronymic = f'patronymic_{i}'
+            # surname = f'surname_{i}'
+            #
+            # date_added = datetime.datetime.now()
+            #
+            # last_id_int = insert_person(cursor, name, patronymic, surname, comment, date_added)
+            #
+            # insert_embedding(cursor, portrait_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+            #                  'photo_true_tf')
+            # insert_embedding(cursor, sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+            #                  'sketch_true_tf')
+            # insert_embedding(cursor, random_sketch_image_embed_tf, date_added, tensorflow_id, last_id_int, thumbnail_id,
+            #                  'sketch_false_tf')
+            #
+            # insert_embedding(cursor, portrait_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+            #                  'photo_true_arc')
+            # insert_embedding(cursor, sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+            #                  'sketch_true_arc')
+            # insert_embedding(cursor, random_sketch_image_embed_arc, date_added, arcface_id, last_id_int, thumbnail_id,
+            #                  'sketch_false_arc')
 
             right_embed_arc = np.concatenate((portrait_image_embed_arc, sketch_image_embed_arc))
             wrong_embed_arc = np.concatenate((portrait_image_embed_arc, random_sketch_image_embed_arc))
 
-            # запись эмбеддингов(конкатенации) в файл
+            # запись эмбедингов(конкатенации) в файл
             if count < test_index:
                 # ts
                 count_to_save = count
@@ -109,11 +122,17 @@ if __name__ == "__main__":
 
             path_to_save_right = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
                                               f"tf_embed_{count_to_save}")
-
+            path_to_save_right_distances = os.path.join("../itnt", f"for_tf/{folder_name}", "right",
+                                                        f"tf_embed_distances_{count_to_save}")
             path_to_save_wrong = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
                                               f"tf_embed_{count_to_save}")
+            path_to_save_wrong_distances = os.path.join("../itnt", f"for_tf/{folder_name}", "wrong",
+                                                        f"tf_embed_distances_{count_to_save}")
+
             np.save(path_to_save_right, right_embed_tf)
             np.save(path_to_save_wrong, wrong_embed_tf)
+            np.save(path_to_save_right_distances, right_distances_tf)
+            np.save(path_to_save_wrong_distances, wrong_distances_tf)
 
             # arc
             path_to_save_right = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
@@ -122,8 +141,16 @@ if __name__ == "__main__":
             path_to_save_wrong = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
                                               f"arc_embed_{count_to_save}")
 
+            path_to_save_right_distances = os.path.join("../itnt", f"for_arc/{folder_name}", "right",
+                                                        f"arc_embed_distances_{count_to_save}")
+
+            path_to_save_wrong_distances = os.path.join("../itnt", f"for_arc/{folder_name}", "wrong",
+                                                        f"arc_embed_distances_{count_to_save}")
+
             np.save(path_to_save_right, right_embed_arc)
             np.save(path_to_save_wrong, wrong_embed_arc)
+            np.save(path_to_save_right_distances, right_distances_arc)
+            np.save(path_to_save_wrong_distances, wrong_distances_arc)
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition

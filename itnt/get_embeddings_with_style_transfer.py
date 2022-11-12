@@ -9,6 +9,7 @@ from arcface.lib import ArcFaceModel
 import utils.tensorflow.style_transfer
 from utils.my_arcface.main import calculate_embedding_with_model
 from utils.tensorflow.face_encoding import get_encoding
+from get_embeddings import get_distances
 
 if __name__ == "__main__":
     transfer_model = utils.tensorflow.style_transfer.TransferModel(
@@ -58,6 +59,9 @@ if __name__ == "__main__":
             right_embed_tf = np.concatenate((portrait_image_with_style_right_embed_tf, sketch_image_embed_right_tf))
             wrong_embed_tf = np.concatenate((portrait_image_with_style_wrong_embed_tf, random_sketch_image_embed_tf))
 
+            right_distances_tf = get_distances(portrait_image_with_style_right_embed_tf, sketch_image_embed_right_tf)
+            wrong_distances_tf = get_distances(portrait_image_with_style_wrong_embed_tf, random_sketch_image_embed_tf)
+
             # arcface embeddings
             portrait_image_with_style_right_embed_arc = calculate_embedding_with_model(portrait_image_with_style_right,
                                                                                        input_size, model)
@@ -70,6 +74,9 @@ if __name__ == "__main__":
             right_embed_arc = np.concatenate((portrait_image_with_style_right_embed_arc, sketch_image_embed_right_arc))
             wrong_embed_arc = np.concatenate((portrait_image_with_style_wrong_embed_arc, random_sketch_image_embed_arc))
 
+            right_distances_arc = get_distances(portrait_image_with_style_right_embed_arc, sketch_image_embed_right_arc)
+            wrong_distances_arc = get_distances(portrait_image_with_style_wrong_embed_arc, random_sketch_image_embed_arc)
+
             if count < test_index:
                 # ts
                 count_to_save = count
@@ -80,21 +87,32 @@ if __name__ == "__main__":
 
             path_to_save_right = os.path.join("../itnt", f"for_tf_with_st/{folder_name}", "right",
                                               f"tf_embed_{count_to_save}")
-
+            path_to_save_right_distances = os.path.join("../itnt", f"for_tf_with_st/{folder_name}", "right",
+                                                        f"tf_embed_distances_{count_to_save}")
             path_to_save_wrong = os.path.join("../itnt", f"for_tf_with_st/{folder_name}", "wrong",
                                               f"tf_embed_{count_to_save}")
+            path_to_save_wrong_distances = os.path.join("../itnt", f"for_tf_with_st/{folder_name}", "wrong",
+                                                        f"tf_embed_distances_{count_to_save}")
             np.save(path_to_save_right, right_embed_tf)
             np.save(path_to_save_wrong, wrong_embed_tf)
+            np.save(path_to_save_right_distances, right_distances_tf)
+            np.save(path_to_save_wrong_distances, wrong_distances_tf)
+
 
             # arc
             path_to_save_right = os.path.join("../itnt", f"for_arc_with_st/{folder_name}", "right",
                                               f"arc_embed_{count_to_save}")
-
+            path_to_save_right_distances = os.path.join("../itnt", f"for_arc_with_st/{folder_name}", "right",
+                                                        f"arc_embed_distances_{count_to_save}")
             path_to_save_wrong = os.path.join("../itnt", f"for_arc_with_st/{folder_name}", "wrong",
                                               f"arc_embed_{count_to_save}")
+            path_to_save_wrong_distances = os.path.join("../itnt", f"for_arc_with_st/{folder_name}", "wrong",
+                                                       f"arc_embed_distances_{count_to_save}")
 
             np.save(path_to_save_right, right_embed_arc)
             np.save(path_to_save_wrong, wrong_embed_arc)
+            np.save(path_to_save_right_distances, right_distances_arc)
+            np.save(path_to_save_wrong_distances, wrong_distances_arc)
         except IndexError as e:
             print(
                 f"{str(e)} \n не удалось обнаружить лицо на фотографии")  # https://stackoverflow.com/questions/59919993/indexerror-list-index-out-of-range-face-recognition

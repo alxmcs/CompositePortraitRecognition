@@ -1,17 +1,13 @@
-import os
 # Load dataset
 import os
 
 # Load dataset
 import numpy as np
-from sklearn import svm
-from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score
-
+import Constants
+from sklearn.naive_bayes import GaussianNB
 
 def get_count_errors(testing_labels, predicts):
     cnt = 0
@@ -60,41 +56,63 @@ def test_model(model_folder_name, training_folder_name, testing_folder_name, cou
     count_test_pairs = count_testing_samples * 2
     testing_features, testing_labels = get_samples_and_labels(model_folder_name, testing_folder_name,
                                                               count_testing_samples, name_embed)
+
+    # clf = GaussianNB()
+    # clf = train_model(training_features, training_labels, clf)
+
     clf = make_pipeline(StandardScaler(), SVC(gamma='auto'))
-    clf = train_model(training_features, training_labels, clf)
+    clf.fit(training_features, training_labels)
     Pipeline(steps=[('standardscaler', StandardScaler()),
                     ('svc', SVC(gamma='auto'))])
+
     predicts, count_errors = test_samples_and_labels(testing_features, testing_labels, clf)
     accuracy = 1 - count_errors / count_test_pairs
-    print(testing_labels)
-    print(predicts)
-    print(f"errors count = {count_errors} from {count_test_pairs}")
     return count_errors, accuracy
 
 
 if __name__ == "__main__":
-    model_folder_name = "for_arc"
-    training_folder_name = "training"
-    count_training_samples = 78
-    name_embed = "arc_embed_"
-    testing_folder_name = "test"
-    count_testing_samples = 32
-    count_errors, accuracy = test_model(model_folder_name, training_folder_name, testing_folder_name,
-                                        count_training_samples, count_testing_samples, name_embed)
+    """
+    Testing concatenation embeddings 
+    """
+    count_errors, accuracy = test_model(Constants.ARCFACE_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.ARCFACE_EMBED_CONC_NAME)
     print(f"Testing arcface without style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
 
-    model_folder_name = "for_arc_with_st"
-    count_errors, accuracy = test_model(model_folder_name, training_folder_name, testing_folder_name,
-                                        count_training_samples, count_testing_samples, name_embed)
+    count_errors, accuracy = test_model(Constants.ARCFACE_WITH_ST_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.ARCFACE_EMBED_CONC_NAME)
     print(f"Testing arcface with style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
 
-    model_folder_name = "for_tf"
-    name_embed = "tf_embed_"
-    count_errors, accuracy = test_model(model_folder_name, training_folder_name, testing_folder_name,
-                                        count_training_samples, count_testing_samples, name_embed)
+    count_errors, accuracy = test_model(Constants.TENSORFLOW_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.TENSORFLOW_EMBED_CONC_NAME)
     print(f"Testing tensorflow without style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
 
-    model_folder_name = "for_tf_with_st"
-    count_errors, accuracy = test_model(model_folder_name, training_folder_name, testing_folder_name,
-                                        count_training_samples, count_testing_samples, name_embed)
+    count_errors, accuracy = test_model(Constants.TENSORFLOW_WITH_ST_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.TENSORFLOW_EMBED_CONC_NAME)
     print(f"Testing tensorflow with style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
+
+    """
+    Testing vectors (euclidean(u,v), chebyshev(u, v), distance.cosine(u, v))
+    """
+    count_errors, accuracy = test_model(Constants.ARCFACE_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.ARCFACE_EMBED_DISTANCE_NAME)
+    print(f"Testing arcface(using distances) without style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
+
+    count_errors, accuracy = test_model(Constants.ARCFACE_WITH_ST_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.ARCFACE_EMBED_DISTANCE_NAME)
+    print(f"Testing arcface(using distances) with style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
+
+    count_errors, accuracy = test_model(Constants.TENSORFLOW_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.TENSORFLOW_EMBED_DISTANCE_NAME)
+    print(f"Testing tensorflow(using distances) without style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
+
+    count_errors, accuracy = test_model(Constants.TENSORFLOW_WITH_ST_FOLDER_NAME, Constants.TRAINING_FOLDER_NAME,
+                                        Constants.TESTING_FOLDER_NAME, Constants.COUNT_TRAINING_SAMPLES,
+                                        Constants.COUNT_TESTING_SAMPLES, Constants.TENSORFLOW_EMBED_DISTANCE_NAME)
+    print(f"Testing tensorflow(using distances) with style transfer\ncount errors = {count_errors} accuracy = {accuracy}")
