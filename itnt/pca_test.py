@@ -12,17 +12,17 @@ from sklearn.decomposition import PCA
 QUERIES = {
     'same': """select value_p, value_s, pt_id, 1 as class  
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = \'photo_true_tf\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = \'photo_true_tf_tdcs\')
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = \'sketch_true_tf\')
+        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = \'sketch_true_tf_tdcs\')
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc""",
     'different': """select value_p, value_s, pt_id, 0 as class 
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = \'photo_true_tf\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = \'photo_true_tf_tdcs\')
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = \'sketch_false_tf\')
+        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = \'sketch_false_tf_tdcs\')
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc"""
@@ -44,6 +44,25 @@ def get_tf_data_from_db(key):
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
 
 
+def testing_PCA(test_n_components_array, data, target):
+    vect_accuracy_n_comp = []
+    tmp_data = data
+    for n_comp in test_n_components_array:
+        data = tmp_data
+        pca = PCA(n_comp)  # при таких параметрах вроде получаются наилучшие значения - но попробуй сам
+        pca.fit(data)
+        data = pca.transform(data)
+        print(data.shape)
+
+        x_train, x_test, y_train, y_test = train_test_split(data, target, test_size=0.3, random_state=0,
+                                                            stratify=target)
+        clf = svm.NuSVC(gamma="auto")
+        clf.fit(x_train, y_train)
+        y_pred = clf.predict(x_test)
+        print(f"n_component = {n_comp} NuSVC: {accuracy_score(y_test, y_pred)}")
+        vect_accuracy_n_comp.append([n_comp, accuracy_score(y_test, y_pred)])
+    return vect_accuracy_n_comp
+
 if __name__ == "__main__":
     tf_true = get_tf_data_from_db('same')
     tf_false = get_tf_data_from_db('different')
@@ -52,8 +71,9 @@ if __name__ == "__main__":
     data = StandardScaler().fit_transform(data)
     print(data.shape)
     print(target.shape)
+    tmp_data = data
 
-    pca = PCA(.90) # при таких параметрах вроде получаются наилучшие значения - но попробуй сам
+    pca = PCA(.90)  # при таких параметрах вроде получаются наилучшие значения - но попробуй сам
     pca.fit(data)
     data = pca.transform(data)
     print(data.shape)
@@ -63,6 +83,11 @@ if __name__ == "__main__":
     clf.fit(x_train, y_train)
     y_pred = clf.predict(x_test)
     print(f"NuSVC: {accuracy_score(y_test, y_pred)}")
+
+    # тестирование параметра n_component
+    n_comp_array = np.arange(0.1, 1.0, 0.1, dtype=float)
+    vect_acc = testing_PCA(n_comp_array, tmp_data, target)
+    print(vect_acc)
 
     mlp = MLPClassifier(alpha=0.5, max_iter=10000)
     mlp.fit(x_train, y_train)
