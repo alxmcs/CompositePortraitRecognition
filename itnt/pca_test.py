@@ -4,7 +4,7 @@ import openpyxl
 from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     clf.fit(x_train, y_train)
     y_pred = clf.predict(x_test)
     clf_ = accuracy_score(y_test, y_pred)
-    print(f"NuSVC: {accuracy_score(y_test, y_pred)}")
+    print(f"NuSVC: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
 
     # # тестирование параметра n_component
     # n_comp_array = np.arange(0.1, 1.0, 0.1, dtype=float)
@@ -125,24 +125,24 @@ if __name__ == "__main__":
     mlp.fit(x_train, y_train)
     y_pred = mlp.predict(x_test)
     mlp_ = accuracy_score(y_test, y_pred)
-    print(f"MLPClassifier: {accuracy_score(y_test, y_pred)}")
+    print(f"MLPClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
 
     rfc = RandomForestClassifier(max_depth=20, n_estimators=10, max_features=10)
     rfc.fit(x_train, y_train)
     y_pred = rfc.predict(x_test)
     rfc_ = accuracy_score(y_test, y_pred)
-    print(f"RandomForestClassifier: {accuracy_score(y_test, y_pred)}")
+    print(f"RandomForestClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}")
 
     qda = QuadraticDiscriminantAnalysis()
     qda.fit(x_train, y_train)
     y_pred = qda.predict(x_test)
     qda_ = accuracy_score(y_test, y_pred)
-    print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}")
+    print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
 
-    book = openpyxl.Workbook()
-    headers = ['tensorflow_without_st', 'NuSVC', 'MLPClassifier', 'RandomForestClassifier', 'QuadraticDiscriminantAnalysis']
-    sheet_1 = book.create_sheet("tensorflow results", 0)
-    sheet_1.append(headers)
-    sheet_1.append(
-        ['', clf_, mlp_, rfc_, qda_])
-    book.save("C:\\CompositePortraitRecongnition\\itnt\\testing_tensorflow_with_st_results.xlsx")
+   # book = openpyxl.Workbook()
+   # headers = ['tensorflow_without_st', 'NuSVC', 'MLPClassifier', 'RandomForestClassifier', 'QuadraticDiscriminantAnalysis']
+   # sheet_1 = book.create_sheet("tensorflow results", 0)
+   # sheet_1.append(headers)
+   # sheet_1.append(
+   #     ['', clf_, mlp_, rfc_, qda_])
+   # book.save("C:\\CompositePortraitRecongnition\\itnt\\testing_tensorflow_with_st_results.xlsx")
