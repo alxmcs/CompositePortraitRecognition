@@ -1,37 +1,24 @@
+import os.path
 import sqlite3
-import io
-import numpy as np
 
-
-# def adapt_array(arr):
-#     """
-#     http://stackoverflow.com/a/31312102/190597 (SoulNibbler)
-#     """
-#     out = io.BytesIO()
-#     np.save(out, arr)
-#     out.seek(0)
-#     return sqlite3.Binary(out.read())
-#
-#
-# def convert_array(text):
-#     out = io.BytesIO(text)
-#     out.seek(0)
-#     return np.load(out)
-#
-#
-# # Converts np.array to TEXT when inserting
-# sqlite3.register_adapter(np.ndarray, adapt_array)
-#
-# # Converts TEXT to np.array when selecting
-# sqlite3.register_converter("array", convert_array)
+QUERIES = {
+    'insert_person': """insert into person(name, patronymic, surname, comment, date_added) VALUES(?, ?, ?, ?, ?)""",
+    'select_person': """select * from person""",
+    'insert_embedding': """insert into embedding(value, date_added, model_id, preprocessing_id, person_id, info) 
+    VALUES(?, ?, ?, ?, ?, ?)""",
+    'delete_from_embedding': """delete from embedding""",
+    'delete_from_model': """delete from model""",
+    'delete_from_person': """delete from person""",
+    'delete_from_preprocessing': """delete from preprocessing"""
+}
 
 
 def insert_person(cursor, name, patronymic, surname, comment, date_added):
     person_data = [(name, patronymic, surname, comment, str(date_added))]
     cursor.executemany(
-        "insert into person(name, patronymic, surname, comment, date_added) VALUES(?, ?, ?, ?, ?)",
+        QUERIES['insert_person'],
         person_data)
-    cursor.execute("select * from person")
+    cursor.execute(QUERIES['select_person'])
     return cursor.lastrowid
 
 
@@ -39,25 +26,26 @@ def insert_embedding(cursor, embedding, date_added, model_id, person_id, preproc
     embedding_data = [str(embedding), str(date_added), model_id, preprocessing_id,
                       person_id, info]
     cursor.execute(
-        "insert into embedding(value, date_added, model_id, preprocessing_id, person_id, info) VALUES(?, ?, ?, ?, ?, ?)",
+        QUERIES['insert_embedding'],
         embedding_data)
 
 
-def clear_db(cursor, table_names):
+def clear_tables_from_db(cursor, table_names):
     for table_name in table_names:
         if table_name == 'embedding':
-            cursor.execute('delete from embedding')
+            cursor.execute(QUERIES['delete_from_embedding'])
         if table_name == 'model':
-            cursor.execute('delete from model')
+            cursor.execute(QUERIES['delete_from_model'])
         if table_name == 'person':
-            cursor.execute('delete from person')
+            cursor.execute(QUERIES['delete_from_person'])
         if table_name == 'preprocessing':
-            cursor.execute('delete from preprocessing')
+            cursor.execute(QUERIES['delete_from_preprocessing'])
 
 
 if __name__ == "__main__":
-    conn = sqlite3.connect("C:\\CompositePortraitRecongnition\\db\\database.db")
+    db_path = os.path.join('../db', 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    clear_db(cursor, ['embedding', 'person'])
+    clear_tables_from_db(cursor, ['embedding', 'person'])
     conn.commit()
     conn.close()

@@ -1,17 +1,52 @@
 import sqlite3
 import numpy as np
 import openpyxl
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.decomposition import PCA
 
 # image_with_st_tf_tdcs
 # image_with_random_st_tf_tdcs
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+
+names = [
+    "Nearest Neighbors",
+    "Linear SVM",
+    "RBF SVM",
+    "Gaussian Process",
+    "Decision Tree",
+    "Random Forest",
+    "Neural Net",
+    "AdaBoost",
+    "Naive Bayes",
+    "QDA",
+]
+
+classifiers = [
+    KNeighborsClassifier(3),
+    SVC(kernel="linear", C=0.025),
+    SVC(gamma=2, C=1),
+    GaussianProcessClassifier(1.0 * RBF(1.0)),
+    DecisionTreeClassifier(max_depth=5),
+    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+    MLPClassifier(alpha=1, max_iter=1000),
+    AdaBoostClassifier(),
+    GaussianNB(),
+    QuadraticDiscriminantAnalysis(),
+]
+
+
+
 
 MODEL_ID = 1
 
@@ -44,9 +79,6 @@ def get_tf_data_from_db(key):
     cursor = conn.cursor()
     db_data = [list(item) for item in cursor.execute(QUERIES[key]).fetchall()]
     for row in db_data:
-        # row[0] = np.concatenate((np.array([float(x) for x in ''.join(row[0]).strip('[]').replace('\n', '').split(' ') if x]),
-        #                        np.array([float(x) for x in ''.join(row[1]).strip('[]').replace('\n', '').split(' ') if x])))
-        # вместо конкатенации ебанул поэлементную разность
         row[0] = (np.array([float(x) for x in ''.join(row[0]).strip('[]').replace('\n', '').split(' ') if x]) -
                   np.array([float(x) for x in ''.join(row[1]).strip('[]').replace('\n', '').split(' ') if x]))
     return [np.array([db_data[x][0] for x in range(0, len(db_data))]),
@@ -54,7 +86,6 @@ def get_tf_data_from_db(key):
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
 
 
-#
 def get_arc_data_from_db(key):
     conn = sqlite3.connect("..\\db\\database.db")
     cursor = conn.cursor()
@@ -139,10 +170,3 @@ if __name__ == "__main__":
     qda_ = accuracy_score(y_test, y_pred)
     print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
 
-   # book = openpyxl.Workbook()
-   # headers = ['tensorflow_without_st', 'NuSVC', 'MLPClassifier', 'RandomForestClassifier', 'QuadraticDiscriminantAnalysis']
-   # sheet_1 = book.create_sheet("tensorflow results", 0)
-   # sheet_1.append(headers)
-   # sheet_1.append(
-   #     ['', clf_, mlp_, rfc_, qda_])
-   # book.save("C:\\CompositePortraitRecongnition\\itnt\\testing_tensorflow_with_st_results.xlsx")
