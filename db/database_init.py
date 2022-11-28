@@ -8,17 +8,16 @@ def get_database_path():
 
 if __name__ == "__main__":
     database_path = get_database_path()
-    conn = sqlite3.connect(database_path)
-    cursor = conn.cursor()
+    with sqlite3.connect(database_path) as conn:
+        cursor = conn.cursor()
 
-    path_fd = get_database_path()
-    with open(path_fd, 'r', encoding='utf-8') as fd:
-        sqlFile = fd.read()
+        path_fd = get_database_path()
+        with open(path_fd, 'r', encoding='utf-8') as fd:
+            sqlFile = fd.read()
 
-    sqlCommands = sqlFile.split(';')
+        sqlCommands = sqlFile.split(';')
 
-    for command in sqlCommands:
-        cursor.execute(command)
+        for command in sqlCommands:
+            cursor.execute(command)
 
-    conn.commit()
-    conn.close()
+        conn.commit()

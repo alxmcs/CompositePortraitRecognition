@@ -92,7 +92,7 @@ if __name__ == "__main__":
         sheet_1.append(
             [successful_indexes[i], tensorflow_encodings_array_before[i], tensorflow_encodings_array_after[i],
              arcface_encodings_array_before[i], arcface_encodings_array_after[i]])
-    book.save("C:\\CompositePortraitRecongnition\\results\\testing_TD_CS_results.xlsx")
+    book.save("testing_TD_CS_results.xlsx")
 
     # this part calculates average gain for tensorflow
     avg_before_tensorflow = sum(tensorflow_encodings_array_before) / len(tensorflow_encodings_array_before)

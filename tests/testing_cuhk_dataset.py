@@ -13,7 +13,8 @@ import utils.tensorflow.style_transfer
 from tests.distance_visualization import display_results
 
 if __name__ == "__main__":
-    content1 = os.listdir('C:\\CompositePortraitRecongnition\\dataset\\CUHK\\testing_photos')
+    path1 = os.path.join('../dataset', 'CUHK', 'testing_photos')
+    content1 = os.listdir(path1)
     # print(content1)
     # content2 = os.listdir('C:\\CompositePortraitRecongnition\\dataset\\CUHK\\testing_sketches')
     # print(content2)
@@ -133,4 +134,4 @@ if __name__ == "__main__":
     sheet_1.append(
         [avg_tensorflow_before, avg_wrong_tensorflow_before, avg_tensorflow_after, avg_wrong_tensorflow_after,
          avg_arcface_before, avg_wrong_arcface_before, avg_arcface_after, avg_wrong_arcface_after])
-    book.save("C:\\CompositePortraitRecongnition\\tests\\testing_CUHK_results.xlsx")
+    book.save("testing_CUHK_results.xlsx")

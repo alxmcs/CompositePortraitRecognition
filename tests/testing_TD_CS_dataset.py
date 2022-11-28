@@ -9,7 +9,6 @@ from arcface.lib import ArcFaceModel
 import utils.my_arcface.main
 import utils.tensorflow.face_encoding
 import utils.tensorflow.style_transfer
-from tests.distance_visualization import display_results
 
 if __name__ == "__main__":
 
@@ -128,4 +127,4 @@ if __name__ == "__main__":
     sheet_1.append(
         [avg_tensorflow_before, avg_wrong_tensorflow_before, avg_tensorflow_after, avg_wrong_tensorflow_after,
          avg_arcface_before, avg_wrong_arcface_before, avg_arcface_after, avg_wrong_arcface_after])
-    book.save("C:\\CompositePortraitRecongnition\\tests\\testing_TDCS_results.xlsx")
+    book.save("testing_TDCS_results.xlsx")

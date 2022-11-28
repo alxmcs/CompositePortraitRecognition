@@ -1,6 +1,7 @@
 import sqlite3
 import numpy as np
 import openpyxl
+from matplotlib import pyplot as plt
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.naive_bayes import GaussianNB
@@ -39,14 +40,11 @@ classifiers = [
     GaussianProcessClassifier(1.0 * RBF(1.0)),
     DecisionTreeClassifier(max_depth=5),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-    MLPClassifier(alpha=1, max_iter=1000),
+    MLPClassifier(alpha=1, max_iter=10000),
     AdaBoostClassifier(),
     GaussianNB(),
     QuadraticDiscriminantAnalysis(),
 ]
-
-
-
 
 MODEL_ID = 1
 
@@ -99,7 +97,7 @@ def get_arc_data_from_db(key):
         row[1] = row[1].replace(', shape=(1, 512), dtype=float32)', '')
         row[0] = (np.array([float(x) for x in ''.join(row[0]).strip('[]').replace('\n', '').split(' ') if x]) -
                   np.array([float(x) for x in ''.join(row[1]).strip('[]').replace('\n', '').split(' ') if x]))
-       # print(row[0])
+    # print(row[0])
     return [np.array([db_data[x][0] for x in range(0, len(db_data))]),
             np.array([db_data[x][2] for x in range(0, len(db_data))], dtype=int),
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
@@ -141,32 +139,44 @@ if __name__ == "__main__":
     print(data.shape)
 
     x_train, x_test, y_train, y_test = train_test_split(data, target, test_size=0.3, random_state=0, stratify=target)
-    clf = svm.NuSVC(gamma="auto")
-    clf.fit(x_train, y_train)
-    y_pred = clf.predict(x_test)
-    clf_ = accuracy_score(y_test, y_pred)
-    print(f"NuSVC: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
+    accuracy_array = []
+    precision_array = []
+    recall_array = []
+    for name, clf in zip(names, classifiers):
+        clf.fit(x_train, y_train)
+        y_pred = clf.predict(x_test)
+        accuracy_array.append(accuracy_score(y_test, y_pred))
+        precision_array.append(precision_score(y_test, y_pred))
+        recall_array.append(recall_score(y_test, y_pred))
 
-    # # тестирование параметра n_component
-    # n_comp_array = np.arange(0.1, 1.0, 0.1, dtype=float)
-    # vect_acc = testing_PCA(n_comp_array, tmp_data, target)
-    # print(vect_acc)
-
-    mlp = MLPClassifier(alpha=0.5, max_iter=10000)
-    mlp.fit(x_train, y_train)
-    y_pred = mlp.predict(x_test)
-    mlp_ = accuracy_score(y_test, y_pred)
-    print(f"MLPClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
-
-    rfc = RandomForestClassifier(max_depth=20, n_estimators=10, max_features=10)
-    rfc.fit(x_train, y_train)
-    y_pred = rfc.predict(x_test)
-    rfc_ = accuracy_score(y_test, y_pred)
-    print(f"RandomForestClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}")
-
-    qda = QuadraticDiscriminantAnalysis()
-    qda.fit(x_train, y_train)
-    y_pred = qda.predict(x_test)
-    qda_ = accuracy_score(y_test, y_pred)
-    print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
-
+    book = openpyxl.Workbook()
+    sheet_1 = book.create_sheet("results", 0)
+    headers = ['clf name', 'accuracy', 'precision', 'recall']
+    sheet_1.append(headers)
+    for name, ac_sc, pr, rec in zip(names, accuracy_array, precision_array, recall_array):
+        sheet_1.append([name, ac_sc, pr, rec])
+    book.save("results.xlsx")
+    # clf = svm.NuSVC(gamma="auto")
+    # clf.fit(x_train, y_train)
+    # y_pred = clf.predict(x_test)
+    # clf_ = accuracy_score(y_test, y_pred)
+    # print(f"NuSVC: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
+    #
+    #
+    # mlp = MLPClassifier(alpha=0.5, max_iter=10000)
+    # mlp.fit(x_train, y_train)
+    # y_pred = mlp.predict(x_test)
+    # mlp_ = accuracy_score(y_test, y_pred)
+    # print(f"MLPClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
+    #
+    # rfc = RandomForestClassifier(max_depth=20, n_estimators=10, max_features=10)
+    # rfc.fit(x_train, y_train)
+    # y_pred = rfc.predict(x_test)
+    # rfc_ = accuracy_score(y_test, y_pred)
+    # print(f"RandomForestClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}")
+    #
+    # qda = QuadraticDiscriminantAnalysis()
+    # qda.fit(x_train, y_train)
+    # y_pred = qda.predict(x_test)
+    # qda_ = accuracy_score(y_test, y_pred)
+    # print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")

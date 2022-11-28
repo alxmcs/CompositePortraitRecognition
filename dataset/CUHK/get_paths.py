@@ -4,12 +4,11 @@ import random
 import numpy as np
 
 
-
-def get_paths():
+def get_paths(dir_path):
     # хард код, но я не знаю как по-другому ибо эта функция запускается из другой папки
-    cur_dir = 'C:\\CompositePortraitRecongnition\\dataset\\CUHK'
-    photos_path = os.path.join(cur_dir, 'photo')
-    sketch_path = os.path.join(cur_dir, 'sketch')
+
+    photos_path = os.path.join(dir_path, 'photo')
+    sketch_path = os.path.join(dir_path, 'sketch')
     photos_names = np.array(os.listdir(photos_path))
     len_dataset = len(photos_names)
     result = []
@@ -23,5 +22,6 @@ def get_paths():
 
 if __name__ == "__main__":
     print(os.getcwd())
-    result = get_paths()
+    cur_dir = os.path.join('C:\\CompositePortraitRecongnition', 'dataset', 'CUHK')
+    result = get_paths(cur_dir)
     print(result)

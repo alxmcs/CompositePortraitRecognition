@@ -139,7 +139,8 @@ if __name__ == "__main__":
     db_path = os.path.join('C:\\CompositePortraitRecongnition', 'db', 'database.db')
     connection = sqlite3.connect(db_path)
 
-    tdcs_paths = dataset.TDCS.get_paths.get_paths()
+    dir_path = os.path.join('C:\\CompositePortraitRecongnition', 'dataset', 'TDCS')
+    tdcs_paths = dataset.TDCS.get_paths.get_paths(dir_path)
     print(tdcs_paths)
     get_embeddings_for_paths(tdcs_paths, connection, model, input_size, transfer_model, 'tdcs')
     connection.commit()
