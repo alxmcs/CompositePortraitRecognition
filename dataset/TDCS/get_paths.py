@@ -5,8 +5,6 @@ import random
 def get_paths(directory_path):
     size = 113
     result = []
-    # хард код, но я не знаю как по-другому ибо эта функция запускается из другой папки
-
     for i in range(1, size):
         photo_path = os.path.join(directory_path, str(i), 'TD_RGB_E_1.jpg')
         photo_path = os.path.abspath(photo_path)

@@ -5,8 +5,6 @@ import numpy as np
 
 
 def get_paths(dir_path):
-    # хард код, но я не знаю как по-другому ибо эта функция запускается из другой папки
-
     photos_path = os.path.join(dir_path, 'photo')
     sketch_path = os.path.join(dir_path, 'sketch')
     photos_names = np.array(os.listdir(photos_path))

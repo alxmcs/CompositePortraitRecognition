@@ -156,27 +156,4 @@ if __name__ == "__main__":
     for name, ac_sc, pr, rec in zip(names, accuracy_array, precision_array, recall_array):
         sheet_1.append([name, ac_sc, pr, rec])
     book.save("results.xlsx")
-    # clf = svm.NuSVC(gamma="auto")
-    # clf.fit(x_train, y_train)
-    # y_pred = clf.predict(x_test)
-    # clf_ = accuracy_score(y_test, y_pred)
-    # print(f"NuSVC: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
-    #
-    #
-    # mlp = MLPClassifier(alpha=0.5, max_iter=10000)
-    # mlp.fit(x_train, y_train)
-    # y_pred = mlp.predict(x_test)
-    # mlp_ = accuracy_score(y_test, y_pred)
-    # print(f"MLPClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
-    #
-    # rfc = RandomForestClassifier(max_depth=20, n_estimators=10, max_features=10)
-    # rfc.fit(x_train, y_train)
-    # y_pred = rfc.predict(x_test)
-    # rfc_ = accuracy_score(y_test, y_pred)
-    # print(f"RandomForestClassifier: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}")
-    #
-    # qda = QuadraticDiscriminantAnalysis()
-    # qda.fit(x_train, y_train)
-    # y_pred = qda.predict(x_test)
-    # qda_ = accuracy_score(y_test, y_pred)
-    # print(f"QuadraticDiscriminantAnalysis: {accuracy_score(y_test, y_pred)}, {precision_score(y_test, y_pred)}, {recall_score(y_test, y_pred)}")
+
