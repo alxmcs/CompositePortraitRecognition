@@ -15,8 +15,7 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.decomposition import PCA
 
-# image_with_st_tf_tdcs
-# image_with_random_st_tf_tdcs
+
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -97,7 +96,6 @@ def get_arc_data_from_db(key):
         row[1] = row[1].replace(', shape=(1, 512), dtype=float32)', '')
         row[0] = (np.array([float(x) for x in ''.join(row[0]).strip('[]').replace('\n', '').split(' ') if x]) -
                   np.array([float(x) for x in ''.join(row[1]).strip('[]').replace('\n', '').split(' ') if x]))
-    # print(row[0])
     return [np.array([db_data[x][0] for x in range(0, len(db_data))]),
             np.array([db_data[x][2] for x in range(0, len(db_data))], dtype=int),
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
@@ -108,7 +106,7 @@ def testing_PCA(test_n_components_array, data, target):
     tmp_data = data
     for n_comp in test_n_components_array:
         data = tmp_data
-        pca = PCA(n_comp)  # при таких параметрах вроде получаются наилучшие значения - но попробуй сам
+        pca = PCA(n_comp)
         pca.fit(data)
         data = pca.transform(data)
         print(data.shape)
@@ -133,7 +131,7 @@ if __name__ == "__main__":
     print(target.shape)
     tmp_data = data
 
-    pca = PCA(.60)  # при таких параметрах вроде получаются наилучшие значения - но попробуй сам
+    pca = PCA(.60)
     pca.fit(data)
     data = pca.transform(data)
     print(data.shape)
