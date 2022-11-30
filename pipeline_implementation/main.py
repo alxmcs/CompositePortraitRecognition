@@ -10,7 +10,6 @@ def get_best_distanse(embeds):
     # больше точно не будет
     best_distance = 100
     path_best_embeds = -1
-    "C:\CompositePortraitRecongnition\output_embeds\1.npy"
     for i in range(1, 19):
         name = str(i) + ".npy"
         path = os.path.join("C:\CompositePortraitRecongnition", "output_embeds", name)
@@ -30,7 +29,7 @@ if __name__ == "__main__":
     INPUT_SIZE = 112
 
     # почему-то если путь к конфигу не абсолютный, то его не воспринимают и это все не работает
-    cascPath = "C:\\CompositePortraitRecongnition\\configs\\cascade.xml"
+    cascPath = os.path.join('../configs', 'cascade.xml')
     faceCascade = cv2.CascadeClassifier(cascPath)
 
     # for calculating embeddings
@@ -40,7 +39,8 @@ if __name__ == "__main__":
                          training=False)
 
     # video_capture = cv2.VideoCapture(0)
-    video_capture = cv2.VideoCapture('C:\\CompositePortraitRecongnition\\video\\test.mp4')
+    video_path = os.path.join('../video', 'test.mp4')
+    video_capture = cv2.VideoCapture(video_path)
     count = 0
     while True:
         # Capture frame-by-frame
@@ -54,7 +54,7 @@ if __name__ == "__main__":
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.imwrite(f"C:\\CompositePortraitRecongnition\\dataset\\frame{count}.jpg", gray[y:y + h, x:x + w])
             count += 1
-            embeds = utils.my_arcface.main.calculate_embeddings(frame, model, input_size)
+            embeds = utils.my_arcface.main.calculate_embeddings(frame, input_size, model)
             best_distance, path_best_embeds = get_best_distanse(embeds)
             print(best_distance, path_best_embeds)
         # Display the resulting frame

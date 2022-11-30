@@ -1,1 +1,4 @@
-{"tensorflow_distance": "0.5821086823699326", "tensorflow_is_like": true, "arcface_distance": "0.008659002", "arcface_is_like": true}
+{"tensorflow_distance": "0.5821086823699326",
+  "tensorflow_is_like": true,
+  "arcface_distance": "0.008659002",
+  "arcface_is_like": true}
