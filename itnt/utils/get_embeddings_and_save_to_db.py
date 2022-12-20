@@ -1,19 +1,21 @@
 import datetime
 import os
-import sqlite3
 
+import cv2
+
+from arcface_lib import predict
 import numpy as np
+import arcface_lib
+import tensorflow as tf
 from PIL import Image
-from arcface.lib import ArcFaceModel
 from scipy.spatial import distance
-
-import dataset.CUHK.get_paths
-from dataset.TDCS.get_paths import get_paths
+from deepface.basemodels import ArcFace
+from arcface_lib.predict import _read_in
+from deepface.commons import functions
 from db.db_operations import insert_person, insert_embedding
 from utils.my_arcface.main import calculate_embedding_with_model
 from utils.tensorflow.face_encoding import get_encoding
-import utils.tensorflow.style_transfer
-
+from dataset.TDCS import get_paths
 
 def get_distances(u, v):
     e_d = distance.euclidean(u, v)
@@ -42,15 +44,15 @@ def get_embeddings_for_paths(paths_vector, connection, arcface_model, arcface_in
             print(f'iteration number {cnt} from {len(paths_vector)}')
 
             portrait_image = Image.open(paths[0])
-            portrait_image.thumbnail((input_size, input_size))
+            portrait_image.thumbnail((arcface_input_size, arcface_input_size))
             portrait_image.save("portrait_resized.png")
 
             sketch_image = Image.open(paths[1])
-            sketch_image.thumbnail((input_size, input_size))
+            sketch_image.thumbnail((arcface_input_size, arcface_input_size))
             sketch_image.save('sketch_resized.png')
 
             random_sketch_image = Image.open(paths[2])
-            random_sketch_image.thumbnail((input_size, input_size))
+            random_sketch_image.thumbnail((arcface_input_size, arcface_input_size))
             random_sketch_image.save('random_sketch_resized.png')
 
             portrait_image_with_style_right = os.path.join('image_with_style_right.png')
@@ -128,20 +130,28 @@ def get_embeddings_for_paths(paths_vector, connection, arcface_model, arcface_in
 
 
 if __name__ == "__main__":
-    input_size = 300
-    model = ArcFaceModel(size=input_size,
-                         backbone_type='ResNet50',
-                         training=False)
+    model = ArcFace.loadModel()
+    model.load_weights("arcface_weights.h5")
+    photo_path = 'C:\\CompositePortraitRecongnition\\dataset\\TDCS\\10\\TD_RGB_E_1.jpg'
+    img = functions.preprocess_face(photo_path, target_size = (112, 112))
 
-    transfer_model = utils.tensorflow.style_transfer.TransferModel(
-        utils.tensorflow.style_transfer.MODEL_URL)
+    # model_path = os.path.join('C:\\CompositePortraitRecongnition', 'arcface_lib', 'assets', 'face_model')
+    # model = arcface_lib.predict.WanderingAI(model_path)
+    #
+    # photo_path = ['C:\\CompositePortraitRecongnition\\dataset\\TDCS\\10\\TD_RGB_E_1.jpg']
+    # targets = [_read_in(x) for x in photo_path]
+    # inputs = model._preprocess(targets)
+    # identities = model._get_embeddings(inputs)
 
-    db_path = os.path.join('C:\\CompositePortraitRecongnition', 'db', 'database.db')
-    connection = sqlite3.connect(db_path)
-
-    dir_path = os.path.join('C:\\CompositePortraitRecongnition', 'dataset', 'TDCS')
-    tdcs_paths = dataset.TDCS.get_paths.get_paths(dir_path)
-    print(tdcs_paths)
-    get_embeddings_for_paths(tdcs_paths, connection, model, input_size, transfer_model, 'tdcs')
-    connection.commit()
-    connection.close()
+    # transfer_model = utils.tensorflow.style_transfer.TransferModel(
+    #     utils.tensorflow.style_transfer.MODEL_URL)
+    #
+    # db_path = os.path.join('C:\\CompositePortraitRecongnition', 'db', 'database.db')
+    # connection = sqlite3.connect(db_path)
+    #
+    # dir_path = os.path.join('C:\\CompositePortraitRecongnition', 'dataset', 'TDCS')
+    # tdcs_paths = dataset.TDCS.get_paths.get_paths(dir_path)
+    # print(tdcs_paths)
+    # get_embeddings_for_paths(tdcs_paths, connection, model, input_size, transfer_model, 'tdcs')
+    # connection.commit()
+    # connection.close()

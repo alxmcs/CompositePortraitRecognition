@@ -9,12 +9,11 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.decomposition import PCA
-
 
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -50,21 +49,21 @@ MODEL_ID = 1
 QUERIES = {
     'same': """select value_p, value_s, pt_id, 1 as class  
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = 
-        \'image_with_st_tf_tdcs\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = 2 and info = 
+        \'image_with_st_arc_tdcs\')
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = 
-        \'sketch_true_tf_tdcs\')
+        (select value as value_s, person_id as st_id from embedding where model_id = 2 and info = 
+        \'sketch_true_arc_tdcs\')
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc""",
     'different': """select value_p, value_s, pt_id, 0 as class 
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 1 and info = 
-        \'image_with_random_st_tf_tdcs\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = 2 and info = 
+        \'image_with_random_st_arc_tdcs\')
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 1 and info = 
-        \'sketch_false_tf_tdcs\')
+        (select value as value_s, person_id as st_id from embedding where model_id = 2 and info = 
+        \'sketch_false_arc_tdcs\')
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc"""
@@ -122,8 +121,8 @@ def testing_PCA(test_n_components_array, data, target):
 
 
 if __name__ == "__main__":
-    tf_true = get_tf_data_from_db('same')
-    tf_false = get_tf_data_from_db('different')
+    tf_true = get_arc_data_from_db('same')
+    tf_false = get_arc_data_from_db('different')
     data = np.concatenate((tf_true[0], tf_false[0]))
     target = np.concatenate((tf_true[2], tf_false[2]))
     data = StandardScaler().fit_transform(data)
@@ -131,27 +130,41 @@ if __name__ == "__main__":
     print(target.shape)
     tmp_data = data
 
-    pca = PCA(.60)
-    pca.fit(data)
-    data = pca.transform(data)
-    print(data.shape)
-
-    x_train, x_test, y_train, y_test = train_test_split(data, target, test_size=0.3, random_state=0, stratify=target)
     accuracy_array = []
     precision_array = []
     recall_array = []
-    for name, clf in zip(names, classifiers):
-        clf.fit(x_train, y_train)
-        y_pred = clf.predict(x_test)
-        accuracy_array.append(accuracy_score(y_test, y_pred))
-        precision_array.append(precision_score(y_test, y_pred))
-        recall_array.append(recall_score(y_test, y_pred))
-
-    book = openpyxl.Workbook()
-    sheet_1 = book.create_sheet("results", 0)
-    headers = ['clf name', 'accuracy', 'precision', 'recall']
-    sheet_1.append(headers)
-    for name, ac_sc, pr, rec in zip(names, accuracy_array, precision_array, recall_array):
-        sheet_1.append([name, ac_sc, pr, rec])
-    book.save("results.xlsx")
-
+    f1_array = []
+    pca_array = [.10, .20, .30, .40, .50, .60, .70, .80, .90]
+    for pca_ in pca_array:
+        pca = PCA(pca_)
+        tmp_data = data
+        pca.fit(tmp_data)
+        tmp_data = pca.transform(tmp_data)
+        print(tmp_data.shape)
+        x_train, x_test, y_train, y_test = train_test_split(tmp_data, target, test_size=0.3, random_state=0,
+                                                        stratify=target)
+        for name, clf in zip(names, classifiers):
+            clf.fit(x_train, y_train)
+            y_pred = clf.predict(x_test)
+            accuracy_array.append(accuracy_score(y_test, y_pred))
+            precision_array.append(precision_score(y_test, y_pred))
+            recall_array.append(recall_score(y_test, y_pred))
+            f1_array.append(f1_score(y_test, y_pred))
+            print(
+                f'clf = {name} acc = {accuracy_score(y_test, y_pred)}, pr = {precision_score(y_test, y_pred)}, '
+                f'rec = {recall_score(y_test, y_pred)} f1 = {f1_score(y_test, y_pred)}')
+        # clf = QuadraticDiscriminantAnalysis()
+        # clf.fit(x_train, y_train)
+        # y_pred = clf.predict(x_test)
+        # accuracy_array.append(accuracy_score(y_test, y_pred))
+        # precision_array.append(precision_score(y_test, y_pred))
+        # recall_array.append(recall_score(y_test, y_pred))
+        # book = openpyxl.Workbook()
+        # sheet_1 = book.create_sheet("results", 0)
+        # headers = ['clf name', 'accuracy', 'precision', 'recall']
+        # sheet_1.append(headers)
+        # for name, ac_sc, pr, rec in zip(names, accuracy_array, precision_array, recall_array):
+        #     sheet_1.append([name, ac_sc, pr, rec])
+        # book.save("results.xlsx")
+    # for pca_, ac, pr, rec in zip(pca_array, accuracy_array, precision_array, recall_array):
+    #     print(f'pca = {pca_}, ac = {ac}, pr = {pr}, rec = {rec}')
