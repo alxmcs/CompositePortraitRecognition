@@ -135,6 +135,10 @@ if __name__ == "__main__":
     recall_array = []
     f1_array = []
     pca_array = [.10, .20, .30, .40, .50, .60, .70, .80, .90]
+    book = openpyxl.Workbook()
+    sheet_1 = book.create_sheet("results", 0)
+    headers = ['pca', 'clf name', 'accuracy', 'precision', 'recall', 'f1']
+    sheet_1.append(headers)
     for pca_ in pca_array:
         pca = PCA(pca_)
         tmp_data = data
@@ -142,29 +146,23 @@ if __name__ == "__main__":
         tmp_data = pca.transform(tmp_data)
         print(tmp_data.shape)
         x_train, x_test, y_train, y_test = train_test_split(tmp_data, target, test_size=0.3, random_state=0,
-                                                        stratify=target)
+                                                            stratify=target)
+        ac_arr = []
+        pr_sc_arr = []
+        rec_arr = []
+        f1_arr = []
         for name, clf in zip(names, classifiers):
             clf.fit(x_train, y_train)
             y_pred = clf.predict(x_test)
-            accuracy_array.append(accuracy_score(y_test, y_pred))
-            precision_array.append(precision_score(y_test, y_pred))
-            recall_array.append(recall_score(y_test, y_pred))
-            f1_array.append(f1_score(y_test, y_pred))
-            print(
-                f'clf = {name} acc = {accuracy_score(y_test, y_pred)}, pr = {precision_score(y_test, y_pred)}, '
-                f'rec = {recall_score(y_test, y_pred)} f1 = {f1_score(y_test, y_pred)}')
-        # clf = QuadraticDiscriminantAnalysis()
-        # clf.fit(x_train, y_train)
-        # y_pred = clf.predict(x_test)
-        # accuracy_array.append(accuracy_score(y_test, y_pred))
-        # precision_array.append(precision_score(y_test, y_pred))
-        # recall_array.append(recall_score(y_test, y_pred))
-        # book = openpyxl.Workbook()
-        # sheet_1 = book.create_sheet("results", 0)
-        # headers = ['clf name', 'accuracy', 'precision', 'recall']
-        # sheet_1.append(headers)
-        # for name, ac_sc, pr, rec in zip(names, accuracy_array, precision_array, recall_array):
-        #     sheet_1.append([name, ac_sc, pr, rec])
-        # book.save("results.xlsx")
-    # for pca_, ac, pr, rec in zip(pca_array, accuracy_array, precision_array, recall_array):
-    #     print(f'pca = {pca_}, ac = {ac}, pr = {pr}, rec = {rec}')
+            ac_arr.append(accuracy_score(y_test, y_pred))
+            pr_sc_arr.append(precision_score(y_test, y_pred))
+            rec_arr.append(recall_score(y_test, y_pred))
+            f1_arr.append(f1_score(y_test, y_pred))
+        accuracy_array.append(ac_arr)
+        precision_array.append(pr_sc_arr)
+        recall_array.append(rec_arr)
+        f1_array.append(f1_arr)
+    for pca, ac_sc, pr, rec, f1 in zip(pca_array, accuracy_array, precision_array, recall_array, f1_array):
+        for name, ac_sr1, pr1, rec1, f11 in zip(names, ac_sc, pr, rec, f1):
+            sheet_1.append([pca, name, ac_sr1, pr1, rec1, f11])
+    book.save("results.xlsx")
