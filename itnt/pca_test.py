@@ -47,23 +47,19 @@ classifiers = [
 MODEL_ID = 1
 
 QUERIES = {
-    'same': """select value_p, value_s, pt_id, 1 as class  
+    'same': """select value_p, value_s, pt_id, ? as class  
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 2 and info = 
-        \'image_with_st_arc_tdcs\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = ? and info = ?)
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 2 and info = 
-        \'sketch_true_arc_tdcs\')
+        (select value as value_s, person_id as st_id from embedding where model_id = ? and info = ?)
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc""",
-    'different': """select value_p, value_s, pt_id, 0 as class 
+    'different': """select value_p, value_s, pt_id, ? as class 
         from 
-        (select value as value_p, person_id as pt_id from embedding where model_id = 2 and info = 
-        \'image_with_random_st_arc_tdcs\')
+        (select value as value_p, person_id as pt_id from embedding where model_id = ? and info = ?)
         inner join
-        (select value as value_s, person_id as st_id from embedding where model_id = 2 and info = 
-        \'sketch_false_arc_tdcs\')
+        (select value as value_s, person_id as st_id from embedding where model_id = ? and info = ?)
         on pt_id = st_id 
         where value_p is not null and value_s is not null 
         order by pt_id asc"""
@@ -82,10 +78,12 @@ def get_tf_data_from_db(key):
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
 
 
-def get_arc_data_from_db(key):
+def get_arc_data_from_db(key, params):
     conn = sqlite3.connect("..\\db\\database.db")
     cursor = conn.cursor()
-    db_data = [list(item) for item in cursor.execute(QUERIES[key]).fetchall()]
+    id = 2
+    photo_str = 'image_with_st_arc_tdcs'
+    db_data = [list(item) for item in cursor.execute(QUERIES[key], params).fetchall()]
     for row in db_data:
         row[0] = row[0].replace('tf.Tensor(\n', '')
         row[0] = row[0].replace('\'[[', '\'[')
@@ -121,8 +119,22 @@ def testing_PCA(test_n_components_array, data, target):
 
 
 if __name__ == "__main__":
-    tf_true = get_arc_data_from_db('same')
-    tf_false = get_arc_data_from_db('different')
+    same = 1
+    diff = 0
+    tensorflow_id = 1
+    arcface_id = 2
+
+    model_id = arcface_id
+    photo_true_str = 'image_with_st_arc_tdcs'
+    sketch_true_str = 'sketch_true_arc_tdcs'
+    photo_false_str = 'image_with_random_st_arc_tdcs'
+    sketch_false_str = 'sketch_false_arc_tdcs'
+
+    query_params_true = [same, model_id, photo_true_str, model_id, sketch_true_str]
+    query_params_false = [diff, model_id, photo_false_str, model_id, sketch_false_str]
+
+    tf_true = get_arc_data_from_db('same', query_params_true)
+    tf_false = get_arc_data_from_db('different', query_params_false)
     data = np.concatenate((tf_true[0], tf_false[0]))
     target = np.concatenate((tf_true[2], tf_false[2]))
     data = StandardScaler().fit_transform(data)
@@ -134,7 +146,7 @@ if __name__ == "__main__":
     precision_array = []
     recall_array = []
     f1_array = []
-    pca_array = [.10, .20, .30, .40, .50, .60, .70, .80, .90]
+    pca_array = [.20, .30, .40, .50, .60, .70, .80, .90]
     book = openpyxl.Workbook()
     sheet_1 = book.create_sheet("results", 0)
     headers = ['pca', 'clf name', 'accuracy', 'precision', 'recall', 'f1']
