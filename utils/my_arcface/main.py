@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 from arcface.lib import l2_norm, ArcFaceModel
+import tensorflow as tf
 
+model_path = 'saved_model.pb'
 
 def calculate_embedding_with_model(path, input_size, model):
     img = cv2.imread(path)
@@ -9,11 +11,9 @@ def calculate_embedding_with_model(path, input_size, model):
     return l2_norm(model(img))
 
 
-def calculate_embedding(path, input_size=300):
+def calculate_embedding(path, input_size=112):
     img = cv2.imread(path)
-    model = ArcFaceModel(size=input_size,
-                         backbone_type='ResNet50',
-                         training=False)
+    model = tf.keras.models.load_model(model_path)
     img = convert_image(img, input_size)
     return l2_norm(model(img))
 
