@@ -12,7 +12,8 @@ QUERIES = {
     'delete_from_person': """delete from person""",
     'delete_from_preprocessing': """delete from preprocessing""",
     'insert_model': """insert into model(name, comment, date_added) VALUES (?, ?, ?)""",
-    'get_model_id_by_name': """select id from model where name = ?"""
+    'get_model_id_by_name': """select id from model where name = ?""",
+    'insert_preprocessing': """insert into preprocessing(name, comment, date_added) VALUES (?,?,?)"""
 }
 
 
@@ -29,6 +30,14 @@ def init_models(cursor):
     date_added = datetime.datetime.now()
     for model_name in models:
         cursor.execute(QUERIES['insert_model'], [model_name, '', str(date_added)])
+
+
+def init_preprocessings(cursor):
+    preprocessings = [
+        "thumbnail"
+    ]
+    for preprocessing_name in preprocessings:
+        cursor.execute(QUERIES['insert_preprocessing'], [preprocessing_name, '', str(datetime.datetime.now())])
 
 
 def insert_person(cursor, name, patronymic, surname, comment, date_added):
@@ -62,8 +71,8 @@ def clear_tables_from_db(cursor, table_names):
 
 if __name__ == "__main__":
     db_path = os.path.join('', 'database.db')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    clear_tables_from_db(cursor, ['embedding', 'person'])
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        clear_tables_from_db(cursor, ['embedding', 'person'])
+        conn.commit()
+        conn.close()

@@ -97,16 +97,20 @@ def save_embeds_to_db(paths_vector, connection, model_name, transfer_model, data
 
 
 if __name__ == "__main__":
-    for i in range(0, len(models)):
-        model_name = models[i]
+
+    try:
         transfer_model = dlib_tf_project.utils.tensorflow.style_transfer.TransferModel(
             dlib_tf_project.utils.tensorflow.style_transfer.MODEL_URL)
+    except (RuntimeError, TypeError, NameError):
+        print('Error getting transfer model')
+        exit()
 
-        db_path = os.path.join('/', 'common', 'db', 'database.db')
-        connection = sqlite3.connect(db_path)
-
+    db_path = os.path.join('C:\\CompositePortraitRecongnition', 'common', 'db', 'database.db')
+    with sqlite3.connect(db_path) as conn:
         dir_path = os.path.join('/', 'common', 'dataset', 'TDCS')
         tdcs_paths = common.dataset.TDCS.get_paths.get_paths(dir_path)
         print(tdcs_paths)
         dataset_name = 'tdcs'
-        save_embeds_to_db(tdcs_paths, connection, model_name, transfer_model, dataset_name)
+        for i in range(0, len(models)):
+            model_name = models[i]
+            save_embeds_to_db(tdcs_paths, conn, model_name, transfer_model, dataset_name)
