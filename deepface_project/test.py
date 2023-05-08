@@ -97,13 +97,21 @@ if __name__ == "__main__":
     recall_array_st = []
     f1_array_st = []
 
+    accuracy_array_gray = []
+    precision_array_gray = []
+    recall_array_gray = []
+    f1_array_gray = []
+
     for i in range(0, len(models)):
         model_name = models[i]
         photo_true = f'photo_true_{model_name}_{dataset_name}'
         sketch_true = f'sketch_true_{model_name}_{dataset_name}'
         sketch_false = f'sketch_false_{model_name}_{dataset_name}'
-        photo_true_st = f'photo_true_{model_name}_{dataset_name}_st'
-        photo_false_st = f'photo_false_{model_name}_{dataset_name}_st'
+        photo_true_st = f'photo_true_{model_name}_{dataset_name}_st1'
+        photo_false_st = f'photo_false_{model_name}_{dataset_name}_st1'
+        gray_photo_true = f'gray_photo_true_{model_name}_{dataset_name}'
+        gray_sketch_true = f'gray_sketch_true_{model_name}_{dataset_name}'
+        gray_sketch_false = f'gray_sketch_false_{model_name}_{dataset_name}'
 
         model_id = cursor.execute(db.QUERIES['get_model_id_by_name'], [model_name]).fetchone()[0]
 
@@ -113,21 +121,31 @@ if __name__ == "__main__":
         same_data = get_data(cursor, 'same', [same, model_id, photo_true, model_id, sketch_true])
         diff_data = get_data(cursor, 'different', [diff, model_id, photo_true, model_id, sketch_false])
 
+        gray_same_data = get_data(cursor, 'same', [same, model_id, gray_photo_true, model_id, gray_sketch_true])
+        gray_diff_data = get_data(cursor, 'different', [diff, model_id, gray_photo_true, model_id, gray_sketch_false])
+
         test_data(same_data, diff_data, accuracy_array, precision_array, recall_array, f1_array)
         test_data(same_data_st, diff_data_st, accuracy_array_st, precision_array_st, recall_array_st, f1_array_st)
+        test_data(gray_same_data, gray_diff_data, accuracy_array_gray, precision_array_gray, recall_array_gray,
+                  f1_array_gray)
 
     book = openpyxl.Workbook()
     sheet_1 = book.create_sheet("results", 0)
     sheet_2 = book.create_sheet("results with ST", 1)
+    sheet_3 = book.create_sheet("results gray", 2)
     headers = ['backbone', 'accuracy', 'precision', 'recall', 'f1']
     sheet_1.append(headers)
     sheet_2.append(headers)
-    for name, ac, pr, rec, f1, ac_st, pr_st, rec_st, f1_st in zip(models, accuracy_array, precision_array, recall_array,
-                                                                  f1_array, accuracy_array_st, precision_array_st,
-                                                                  recall_array_st, f1_array_st):
-        print(f'model name = {name} accuracy = {ac:.2f}/{ac_st:.2f}, precision = {pr:.2f}/{pr_st:.2f}, '
-              f'recall = {rec:.2f}/{rec_st:.2f}, f1 '
-              f'score = {f1:.2f}/{f1_st:.2f}')
+    sheet_3.append(headers)
+    for name, ac, pr, rec, f1 in zip(models, accuracy_array, precision_array, recall_array,
+                                                                  f1_array):
+        print(f'model name = {name} accuracy = {ac:.2f}, precision = {pr:.2f}, '
+              f'recall = {rec:.2f}',  f'score = {f1:.2f}')
         sheet_1.append([name, ac, pr, rec, f1])
-        sheet_2.append([name, ac_st, pr_st, rec_st, f1_st])
+    for name, ac, pr, rec, f1 in zip(models, accuracy_array_gray, precision_array_gray, recall_array_gray,
+                                     f1_array_gray):
+        sheet_3.append([name, ac, pr, rec, f1])
+    for name, ac, pr, rec, f1 in zip(models, accuracy_array_st, precision_array_st, recall_array_st,
+                                     f1_array_st):
+        sheet_2.append([name, ac, pr, rec, f1])
     book.save("results.xlsx")
