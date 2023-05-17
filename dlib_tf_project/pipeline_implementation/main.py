@@ -23,6 +23,8 @@ def get_best_distanse(embeds):
     return best_distance, path_best_embeds
 
 
+
+
 if __name__ == "__main__":
     # CONSTANTS
     COUNT_FRAMES = 5
