@@ -1,10 +1,11 @@
+import datetime
 import os
 import sqlite3
-import datetime
+
 from deepface import DeepFace
-import dlib_tf_project.utils.tensorflow.style_transfer
-import common.dataset.TDCS.get_paths
+
 import common.dataset.CUHK.get_paths
+import common.dataset.TDCS.get_paths
 from common.db import db_operations
 from common.db.db_operations import insert_person, insert_embedding
 

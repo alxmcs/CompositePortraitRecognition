@@ -43,8 +43,7 @@ models = [
 ]
 
 
-def get_data(cursor, key, params):
-    db_data = [list(item) for item in cursor.execute(QUERIES[key], params).fetchall()]
+def get_preprocessed_data(db_data):
     for row in db_data:
         row[0] = row[0][1:-1]
         row[0] = np.fromstring(row[0], dtype=float, sep=', ')
@@ -54,6 +53,11 @@ def get_data(cursor, key, params):
     return [np.array([db_data[x][0] for x in range(0, len(db_data))]),
             np.array([db_data[x][2] for x in range(0, len(db_data))], dtype=int),
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
+
+
+def get_data(cursor, key, params):
+    db_data = [list(item) for item in cursor.execute(QUERIES[key], params).fetchall()]
+    return get_preprocessed_data(db_data)
 
 
 def test_data(same_data, diff_data, accuracy_array, precision_array, recall_array, f1_array):
@@ -75,6 +79,34 @@ def test_data(same_data, diff_data, accuracy_array, precision_array, recall_arra
     precision_array.append(precision_score(y_test, y_pred))
     recall_array.append(recall_score(y_test, y_pred))
     f1_array.append(f1_score(y_test, y_pred))
+
+
+def train_classifier():
+    photo_true_st = f'photo_true_Facenet512_tdcs_st'
+    photo_false_st = f'photo_false_Facenet512_tdcs_st'
+    sketch_true = f'sketch_true_Facenet512_tdcs'
+    sketch_false = f'sketch_false_Facenet512_tdcs'
+
+    conn = sqlite3.connect("../../common/db/database.db")
+    cursor = conn.cursor()
+
+    same = 1
+    diff = 0
+    model_id = 5
+
+    same_data_st = get_data(cursor, 'same', [same, model_id, photo_true_st, model_id, sketch_true])
+    diff_data_st = get_data(cursor, 'different', [diff, model_id, photo_false_st, model_id, sketch_false])
+
+    data = np.concatenate((same_data_st[0], diff_data_st[0]))
+    target = np.concatenate((same_data_st[2], diff_data_st[2]))
+
+    data = StandardScaler().fit_transform(data)
+    pca_ = 0.4
+    pca = PCA(pca_)
+    pca.fit(data)
+    data = pca.transform(data)
+    CLF.fit(data, target)
+    return CLF, pca
 
 
 if __name__ == "__main__":
@@ -138,9 +170,9 @@ if __name__ == "__main__":
     sheet_2.append(headers)
     sheet_3.append(headers)
     for name, ac, pr, rec, f1 in zip(models, accuracy_array, precision_array, recall_array,
-                                                                  f1_array):
+                                     f1_array):
         print(f'model name = {name} accuracy = {ac:.2f}, precision = {pr:.2f}, '
-              f'recall = {rec:.2f}',  f'score = {f1:.2f}')
+              f'recall = {rec:.2f}', f'score = {f1:.2f}')
         sheet_1.append([name, ac, pr, rec, f1])
     for name, ac, pr, rec, f1 in zip(models, accuracy_array_gray, precision_array_gray, recall_array_gray,
                                      f1_array_gray):
