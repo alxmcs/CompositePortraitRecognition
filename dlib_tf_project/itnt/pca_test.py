@@ -1,20 +1,18 @@
 import sqlite3
+
 import numpy as np
 import openpyxl
-from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn import svm
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.decomposition import PCA
-
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -98,26 +96,6 @@ def get_arc_data_from_db(key, params):
             np.array([db_data[x][3] for x in range(0, len(db_data))], dtype=int)]
 
 
-def testing_PCA(test_n_components_array, data, target):
-    vect_accuracy_n_comp = []
-    tmp_data = data
-    for n_comp in test_n_components_array:
-        data = tmp_data
-        pca = PCA(n_comp)
-        pca.fit(data)
-        data = pca.transform(data)
-        print(data.shape)
-
-        x_train, x_test, y_train, y_test = train_test_split(data, target, test_size=0.3, random_state=0,
-                                                            stratify=target)
-        clf = svm.NuSVC(gamma="auto")
-        clf.fit(x_train, y_train)
-        y_pred = clf.predict(x_test)
-        print(f"n_component = {n_comp} NuSVC: {accuracy_score(y_test, y_pred)}")
-        vect_accuracy_n_comp.append([n_comp, accuracy_score(y_test, y_pred)])
-    return vect_accuracy_n_comp
-
-
 if __name__ == "__main__":
     same = 1
     diff = 0
@@ -146,11 +124,12 @@ if __name__ == "__main__":
     precision_array = []
     recall_array = []
     f1_array = []
-    pca_array = [.20, .30, .40, .50, .60, .70, .80, .90]
+
     book = openpyxl.Workbook()
     sheet_1 = book.create_sheet("results", 0)
     headers = ['pca', 'clf name', 'accuracy', 'precision', 'recall', 'f1']
     sheet_1.append(headers)
+    pca_array = [.10, .20, .30, .40, .50, .60, .70, .80, .90]
     for pca_ in pca_array:
         pca = PCA(pca_)
         tmp_data = data

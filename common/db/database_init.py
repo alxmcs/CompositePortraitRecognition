@@ -5,7 +5,6 @@ from db_operations import init_preprocessings, init_models
 def get_database_path():
     return os.path.abspath('mydb.sql')
 
-
 if __name__ == "__main__":
     database_path = get_database_path()
     with sqlite3.connect(database_path) as conn:

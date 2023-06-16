@@ -64,8 +64,6 @@ def test_data(same_data, diff_data, accuracy_array, precision_array, recall_arra
     data = np.concatenate((same_data[0], diff_data[0]))
     target = np.concatenate((same_data[2], diff_data[2]))
     data = StandardScaler().fit_transform(data)
-    # print(data.shape)
-    # print(target.shape)
 
     pca_ = 0.4
     pca = PCA(pca_)
@@ -81,9 +79,8 @@ def test_data(same_data, diff_data, accuracy_array, precision_array, recall_arra
     f1_array.append(f1_score(y_test, y_pred))
 
 
-def train_classifier():
-    photo_true_st = f'photo_true_Facenet512_tdcs_st'
-    photo_false_st = f'photo_false_Facenet512_tdcs_st'
+def train_classifier_without_st():
+    photo_true = f'photo_true_Facenet512_tdcs'
     sketch_true = f'sketch_true_Facenet512_tdcs'
     sketch_false = f'sketch_false_Facenet512_tdcs'
 
@@ -94,12 +91,38 @@ def train_classifier():
     diff = 0
     model_id = 5
 
-    same_data_st = get_data(cursor, 'same', [same, model_id, photo_true_st, model_id, sketch_true])
-    diff_data_st = get_data(cursor, 'different', [diff, model_id, photo_false_st, model_id, sketch_false])
+    same_data_st = get_data(cursor, 'same', [same, model_id, photo_true, model_id, sketch_true])
+    diff_data_st = get_data(cursor, 'different', [diff, model_id, photo_true, model_id, sketch_false])
 
     data = np.concatenate((same_data_st[0], diff_data_st[0]))
     target = np.concatenate((same_data_st[2], diff_data_st[2]))
 
+    data = StandardScaler().fit_transform(data)
+    pca_ = 0.5
+    pca = PCA(pca_)
+    pca.fit(data)
+    data = pca.transform(data)
+    CLF.fit(data, target)
+    return CLF, pca
+
+def train_classifier():
+    photo_true_st = f'photo_true_Facenet512_tdcs_st'
+    photo_false_st = f'photo_false_Facenet512_tdcs_st'
+    sketch_true = f'sketch_true_Facenet512_tdcs'
+    sketch_false = f'sketch_false_Facenet512_tdcs'
+    # database
+    conn = sqlite3.connect("../../common/db/database.db")
+    cursor = conn.cursor()
+    # extracting data
+    same = 1
+    diff = 0
+    model_id = 5
+    same_data_st = get_data(cursor, 'same', [same, model_id, photo_true_st, model_id, sketch_true])
+    diff_data_st = get_data(cursor, 'different', [diff, model_id, photo_false_st, model_id, sketch_false])
+    # get data and target
+    data = np.concatenate((same_data_st[0], diff_data_st[0]))
+    target = np.concatenate((same_data_st[2], diff_data_st[2]))
+    # preprocess data
     data = StandardScaler().fit_transform(data)
     pca_ = 0.4
     pca = PCA(pca_)
