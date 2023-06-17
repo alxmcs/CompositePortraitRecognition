@@ -106,7 +106,7 @@ def train_classifier_without_st():
     return CLF, pca
 
 def train_classifier():
-    photo_true_st = f'photo_true_Facenet512_tdcs_st'
+    photo_true_st = 'photo_true_Facenet512_tdcs_st'
     photo_false_st = f'photo_false_Facenet512_tdcs_st'
     sketch_true = f'sketch_true_Facenet512_tdcs'
     sketch_false = f'sketch_false_Facenet512_tdcs'
