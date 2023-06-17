@@ -75,4 +75,3 @@ if __name__ == "__main__":
         cursor = conn.cursor()
         clear_tables_from_db(cursor, ['embedding', 'person'])
         conn.commit()
-        conn.close()
