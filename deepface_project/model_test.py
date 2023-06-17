@@ -108,7 +108,7 @@ def train_classifier_without_st():
 def train_classifier():
     photo_true_st = 'photo_true_Facenet512_tdcs_st'
     photo_false_st = 'photo_false_Facenet512_tdcs_st'
-    sketch_true = f'sketch_true_Facenet512_tdcs'
+    sketch_true = 'sketch_true_Facenet512_tdcs'
     sketch_false = f'sketch_false_Facenet512_tdcs'
     # database
     conn = sqlite3.connect("../../common/db/database.db")
