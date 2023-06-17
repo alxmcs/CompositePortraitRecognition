@@ -80,7 +80,7 @@ def test_data(same_data, diff_data, accuracy_array, precision_array, recall_arra
 
 
 def train_classifier_without_st():
-    photo_true = f'photo_true_Facenet512_tdcs'
+    photo_true = 'photo_true_Facenet512_tdcs'
     sketch_true = f'sketch_true_Facenet512_tdcs'
     sketch_false = f'sketch_false_Facenet512_tdcs'
 
